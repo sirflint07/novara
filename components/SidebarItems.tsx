@@ -25,13 +25,13 @@ const clickHandler = () => {
         <button onClick={clickHandler} className={
             cn(
                 'w-full',
-                isActive ? 'bg-blue-500/10 text-blue-500' : 'text-gray-700 hover:bg-gray-200'
+                isActive ? 'bg-blue-500/10 text-blue-500' : 'text-gray-500 hover:bg-gray-200'
             )
         }>
             <a href={href} className="flex items-center hover:bg-gray-200 gap-2 h-[8vh] justify-between">
                 <div className='flex items-center space-x-2 pl-3'>
                     <span className='inline-block'><Icon size={24} /></span>
-                    <span className='inline-block text-base font-bold'>{label}</span>
+                    <span className='inline-block text-base font-semibold leading-1.5'>{label}</span>
                 </div>
                 
                 <div className={cn(

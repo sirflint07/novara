@@ -1,10 +1,30 @@
 'use client'
 
-import { Home, Settings, User } from 'lucide-react'
+import { BookOpen, ChartBar, Home, Settings, User } from 'lucide-react'
 import SidebarItems from './SidebarItems'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 
 const Sidebar = () => {
+
+  const pathname = usePathname()
+  const isTeacher = pathname.startsWith('/teacher')
+  const isCoursePage = pathname.startsWith('/course') || pathname.includes('/course/')
+
+  const teacherRoutes = [
+    {
+      name: 'Analytics',
+      href: '/teacher/analytics',
+      icon: ChartBar
+    },
+    {
+      name: 'Courses',
+      href: '/teacher/courses',
+      icon: BookOpen
+    }
+  ]
+
+
     const guestRoutes = [
         {
             name: 'Home',
@@ -23,7 +43,7 @@ const Sidebar = () => {
         }
     ]
 
-    const navItems = guestRoutes
+    const navItems = isTeacher ? teacherRoutes : guestRoutes
 
   
   return (
