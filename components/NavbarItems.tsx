@@ -1,10 +1,11 @@
 'use client'
 
-import { Link, LogOutIcon, Menu } from 'lucide-react'
+import { LogOutIcon, Menu } from 'lucide-react'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './ui/sheet'
 import Sidebar from './Sidebar'
 import { usePathname } from 'next/navigation'
 import { Button } from './ui/button'
+import Link from 'next/link'
 
 const NavbarItems = () => {
     const pathname = usePathname()
@@ -31,19 +32,21 @@ const NavbarItems = () => {
     ]
   return (
     <div className="flex space-x-6 gap-6 md:justify-between items-center">
-        <div className='flex space-x-10 max-md:hidden'>
+        <div className='flex space-x-5 lg:space-x-10 max-md:hidden items-center'>
             {navMeunuOptions.map((item, i) => (
-                <a key={i} href={item.href} className="hover:text-gray-600">
+                <a key={i} href={item.href} className="hover:text-gray-600 text-sm md:text-base">
                     {item.name}
                 </a>
             ))}
-        </div>
-        {
+            <div className='flex items-center'>
+            {
             isTeacherPage || isCoursePage ? (
-                <Button variant='default'>
-                    <LogOutIcon className='size-5'/>
-                    <span>Exit</span>
-                </Button>
+                <Link href='/'>
+                    <Button variant='default'>
+                        <LogOutIcon className='size-5'/>
+                        <span>Exit</span>
+                    </Button>
+                </Link>
             ) : (
                 <Link href='/teacher/courses'>
                 <Button>
@@ -52,6 +55,8 @@ const NavbarItems = () => {
                 </Link>
             )
         }
+        </div>
+        </div>
         <div>
            <Sheet>
             <SheetTrigger className="md:hidden hover:opacity-85 transition">

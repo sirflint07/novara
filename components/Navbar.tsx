@@ -15,14 +15,14 @@ const Navbar = () => {
             />
         </div>
         
-        <div className='flex items-center justify-between gap-4'> {/* This will be on the right with justify-between */}
-            <div className='hidden md:block w-0 md:w-[45vw] lg:w-[65vw]'>
-            
-        </div>
-            <SignedIn>
-                <UserButton />
-            </SignedIn>
+        <div className='flex items-center justify-between gap-2 lg:gap-4'>
+        <div className='hidden md:block w-0 md:w-[35vw] lg:w-[42vw] xl:w-[46vw]'></div>
             <NavbarItems />
+            <div className='size-10 flex items-center justify-center rounded-full bg-gray-100'>
+                <SignedIn >
+                    <UserButton/>
+                </SignedIn>
+            </div>
         </div>
     </nav>
   )

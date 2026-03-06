@@ -21,7 +21,7 @@ const clickHandler = () => {
 }
     
   return (
-    <div className='space-y-6 pl-2'>
+    <div className='space-y-6 pl-2 md:pl-0'>
         <button onClick={clickHandler} className={
             cn(
                 'w-full',
