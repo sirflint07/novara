@@ -62,7 +62,7 @@ const NavbarItems = () => {
             <SheetTrigger className="md:hidden hover:opacity-85 transition">
                 <Menu className='size-8' />
             </SheetTrigger>
-            <SheetContent side='left' title='nav' className='p-0'>
+            <SheetContent side='left' title='nav' className='p-0 w-[50vw]'>
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <Sidebar />
             </SheetContent>

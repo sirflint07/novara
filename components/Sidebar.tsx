@@ -4,7 +4,7 @@ import { BookOpen, ChartBar, Home, LogOutIcon, Settings, User } from 'lucide-rea
 import SidebarItems from './SidebarItems'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { SignedIn, SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, SignInButton, SignOutButton, SignUpButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { Button } from './ui/button'
 
@@ -51,8 +51,8 @@ const Sidebar = () => {
   
   return (
     <div className='flex flex-col shadow-sm overflow-y-auto bg-white h-full md:w-[20vw] lg:w-[15vw]'>
-        <div className='mt-2 h-full'>
-          <Link href='/' className='flex gap-1 items-center mb-4'>
+        <div className='py-4'>
+          <Link href='/' className='flex gap-1 items-center pb-1'>
             <Image 
             src="/logo/logo.svg"
             alt='logo'
@@ -62,6 +62,8 @@ const Sidebar = () => {
             />
             <div className='text-2xl font-bold'>Novara</div>
           </Link>
+          </div>
+          <div className='h-1/2'>
             {
               navItems.map((item, i) => (
                 <SidebarItems
@@ -72,22 +74,23 @@ const Sidebar = () => {
                 />
               ))
             }
-            <div className='flex justify-center items-end h-[65%]'>
+            </div>
+            <div className='flex flex-col justify-end items-center h-1/2 gap-4 py-8'>
               <SignedOut>
-                <SignInButton />
-                <SignUpButton>
-                  <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                    Sign Up
-                  </button>
-                </SignUpButton>
+                <p className='py-2 px-8 font-light cursor-pointer hover:scale-105 shadow-2xl rounded-md border border-gray-200 border-b-gray-500 bg-black text-white'>
+                  <SignInButton />
+                </p>
+
+                <p className='py-2 px-8 font-light cursor-pointer hover:scale-105 shadow-2xl rounded-md border border-gray-200 border-b-gray-500 bg-slate-50 text-black'>
+                  <SignUpButton />
+                </p>
               </SignedOut>
               <SignedIn>
-                <Button variant='destructive' className='mt-4 flex items-end justify-center gap-1 px-4 py-2 hover:bg-red-700 cursor-pointer'>
-                  <span className='inline-block'><LogOutIcon /></span><span className='inline-block'>Logout</span>
-                </Button>
+                <p className='mt-4 flex items-center justify-center gap-1 px-5 py-2 hover:bg-red-700 cursor-pointer bg-mauve-800 text-white rounded-md'>
+                  <span className='inline-block'><LogOutIcon size={15}/></span><span className='inline-block'><SignOutButton /></span>
+                </p>
               </SignedIn>
             </div>
-        </div>
     </div>
   )
 }

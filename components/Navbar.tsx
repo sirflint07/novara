@@ -1,3 +1,5 @@
+"use client";
+
 import { SignedIn, UserButton } from '@clerk/nextjs'
 import NavbarItems from './NavbarItems'
 import Image from 'next/image'
