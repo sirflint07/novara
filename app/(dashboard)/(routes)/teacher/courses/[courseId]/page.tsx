@@ -13,31 +13,34 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
 
   const course = await db.course.findUnique({
     where: {
-      id: courseId
+      id: courseId,
+      userId: userId
     }
   })
 
   if (!course) {
-    return redirect('/')
+    return redirect('/teacher/courses')
   }
 
   const requiredFields = [
-    course?.title,
-    course?.imageUrl,
-    course?.description,
-    course?.price,
-    course?.categoryId
+    course.title,
+    course.imageUrl,
+    course.description,
+    course.price,
+    course.categoryId
   ]
 
-  const totalRequiredFields = requiredFields.length
   const completedFieldsCount = requiredFields.filter(Boolean).length
-  const isCompletedText = `Completed fields - ${completedFieldsCount}/${totalRequiredFields}`
+  const totalRequiredFields = requiredFields.length
 
   return (
     <CourseClient 
       courseId={courseId}
       courseTitle={course.title}
-      isCompletedText={isCompletedText}
+      courseDescription={course.description}
+      courseImageUrl={course.imageUrl}
+      completedFieldsCount={completedFieldsCount}
+      totalRequiredFields={totalRequiredFields}
     />
   )
 }

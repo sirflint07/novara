@@ -17,27 +17,28 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ShieldClose, Edit2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
-  title: z.string().min(1, {
-    message: "Title is required",
-  }),
+  description: z.string().min(1, {
+   message: "Description is required and it cannot be less than a character"
+  })
 });
 
-interface TitleFormProps {
+interface DescriptionFormProps {
   initialData?: {
-    title: string;
+    description: string
   };
-  courseTitle: string;
+  courseDescription: string;
   courseId: string;
 }
 
-const TitleForm = ({
+const DescriptionForm = ({
   courseId,
   initialData,
-  courseTitle,
-}: TitleFormProps) => {
+  courseDescription,
+}: DescriptionFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
@@ -46,7 +47,7 @@ const TitleForm = ({
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleTitleEdit = () => {
+  const handleDescriptionEdit = () => {
     setIsEditing((current) => !current);
   };
 
@@ -56,9 +57,9 @@ const TitleForm = ({
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.patch(`/api/courses/${courseId}`, values);
-      handleTitleEdit()
+      handleDescriptionEdit()
       router.refresh();
-      toast.success("Course title updated successfully", {
+      toast.success("Course Description updated successfully", {
         position: "top-left",
         duration: 3000,
         dismissible: true,
@@ -72,24 +73,24 @@ const TitleForm = ({
     <div>
       <div className="p-4 rounded-md bg-slate-100">
         <div className="flex items-center justify-between">
-          <p className="text-sm md:text-base font-medium">Course Title</p>
+          <p className="text-sm md:text-base font-medium">Course Description</p>
           {isEditing ? (
             <Button variant="ghost" className="flex items-center gap-2">
               <span>
                 <ShieldClose size={8} />
               </span>
-              <span onClick={handleTitleEdit}>Cancel</span>
+              <span onClick={handleDescriptionEdit}>Cancel</span>
             </Button>
           ) : (
             <Button
               variant="ghost"
               className="flex items-center gap-2 "
-              onClick={handleTitleEdit}
+              onClick={handleDescriptionEdit}
             >
               <span className="inline-block">
                 <Edit2 size={10} />
               </span>
-              <span className="inline-block">Edit Title</span>
+              <span className="inline-block">Edit Description</span>
             </Button>
           )}
         </div>
@@ -100,15 +101,15 @@ const TitleForm = ({
                 <form onSubmit={form.handleSubmit(handleFormSubmit)}>
                   <FormField
                     control={form.control}
-                    name="title"
+                    name="description"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input
-                            disabled={isSubmitting}
+                          <Textarea
+                            disabled={ isSubmitting }
                             placeholder="e.g. Advanced React"
                             {...field}
-                            className="p-2 rounded-sm focus:outline-none"
+                            className="p-2 rounded-md focus:outline-none"
                           />
                         </FormControl>
                         <FormMessage />
@@ -116,7 +117,7 @@ const TitleForm = ({
                     )}
                   ></FormField>
                   <Button
-                    disabled={!isValid || isSubmitting}
+                    disabled={ isSubmitting || !isValid}
                     className="mt-2"
                     type="submit"
                   >
@@ -126,7 +127,10 @@ const TitleForm = ({
               </Form>
             </div>
           ) : (
-            <p className="text-sm italic">{courseTitle}</p>
+            <p className={cn(
+               "text-sm",
+               courseDescription ? "text-gray-700 font-bold opacity-80 italic": "text-base text-slate-700 font-semibold"
+            )}>{!courseDescription ? "No course description added": courseDescription }</p>
           )}
         </div>
       </div>
@@ -134,4 +138,4 @@ const TitleForm = ({
   );
 };
 
-export default TitleForm;
+export default DescriptionForm;
