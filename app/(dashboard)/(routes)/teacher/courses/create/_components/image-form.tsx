@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Edit2, PlusCircleIcon, ImageIcon, X, Loader2 } from "lucide-react";
 import { UploadFile } from "@/components/file-upload";
 import Image from "next/image";
@@ -19,25 +19,41 @@ interface ImageFormProps {
 const ImageForm = ({ courseId, initialData }: ImageFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState(initialData?.imageUrl);
   const router = useRouter();
+
+  useEffect(() => {
+    setCurrentImageUrl(initialData?.imageUrl);
+  }, [initialData?.imageUrl]);
 
   const handleImageEdit = () => {
     setIsEditing((current) => !current);
   };
 
   const handleFileUpload = async (url: string) => {
+    console.log("Received URL from upload:", url);
+    
+    if (!url) {
+      toast.error("No file URL received");
+      return;
+    }
+    
     setIsUploading(true);
     try {
-      await axios.patch(`/api/courses/${courseId}`, { imageUrl: url });
+      console.log("Sending PATCH request to:", `/api/courses/${courseId}`);
+      const response = await axios.patch(`/api/courses/${courseId}`, { imageUrl: url });
+      console.log("API response:", response.data);
+      
+      setCurrentImageUrl(url);
       setIsEditing(false);
-      router.refresh();
       toast.success("Course image updated successfully", {
         position: "top-right",
         duration: 3000,
       });
+      router.refresh();
     } catch (error) {
+      console.error("API error:", error);
       toast.error("Failed to update course image");
-      console.error(`[UPDATE COURSE IMAGE] - ${error}`);
     } finally {
       setIsUploading(false);
     }
@@ -55,7 +71,7 @@ const ImageForm = ({ courseId, initialData }: ImageFormProps) => {
             className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
             disabled={isUploading}
           >
-            {initialData?.imageUrl ? (
+            {currentImageUrl ? (
               <>
                 <Edit2 className="h-3.5 w-3.5 mr-1" />
                 Edit Image
@@ -81,7 +97,10 @@ const ImageForm = ({ courseId, initialData }: ImageFormProps) => {
                 </div>
               ) : (
                 <>
-                  <UploadFile onChange={handleFileUpload} endpoint="courseImage" />
+                  <UploadFile 
+                    onChange={(url) => handleFileUpload(url)}
+                    endpoint="courseImage" 
+                  />
                   <p className="text-gray-500 text-xs mt-2 text-center">
                     Upload an image (max 8MB)
                   </p>
@@ -106,15 +125,15 @@ const ImageForm = ({ courseId, initialData }: ImageFormProps) => {
           </div>
         ) : (
           <div>
-            {initialData?.imageUrl ? (
-              <div className="rounded-lg overflow-hidden bg-gray-100 p-2 flex justify-center">
+            {currentImageUrl ? (
+              <div className="relative rounded-lg overflow-hidden bg-gray-100 p-2 flex justify-center items-center aspect-video">
                 <Image
-                  src={initialData.imageUrl}
+                  src={currentImageUrl}
                   alt="Course thumbnail"
-                  width={0}
-                  height={0}
-                  sizes="20vw"
-                  className="w-auto h-auto max-w-4xl lg:max-w-full object-contain"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 30vw"
+                  width={300}
+                  height={200}
+                  className="object-contain w-full h-full rounded-lg"
                 />
               </div>
             ) : (

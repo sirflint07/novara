@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { toast } from "sonner";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { UploadThingError } from "uploadthing/server";
 
 const f = createUploadthing();
 
@@ -15,18 +14,6 @@ const authFunc = async () => {
     return { userId }
 }
 
-// const handleUploadError = (error: UploadThingError) => {
-//         toast.error(error.message, {
-
-//             position: "top-center",
-//             duration: 5000,
-//             closeButton: true,
-//         })
-//     }
-
-
-
-// FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
  courseImage: f({
     image: {
@@ -38,7 +25,7 @@ export const ourFileRouter = {
  .middleware(() => authFunc())
  .onUploadComplete(() => {}),
 
- courseAttachmentsAlt: f({
+ courseAttachments: f({
     "image": { maxFileSize: "8MB" },
     "application/pdf": { maxFileSize: "8MB" },
     "video": { maxFileSize: "1GB" },

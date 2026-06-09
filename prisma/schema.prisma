@@ -32,8 +32,7 @@ model Course {
   @@index([categoryId])
 }
 
-
-model Category {
+model Category { 
   id String @id @default(cuid())
   name String @unique
 
@@ -41,10 +40,10 @@ model Category {
   categoryId String?
 }
 
-
 model Attachment {
  id String @id @default(cuid())
  name String
+ fileName String?
  url String?
 
  courseId String
@@ -55,3 +54,22 @@ model Attachment {
 
  @@index([courseId])
 }
+
+// model Chapter {
+//   id String @id @default(cuid())
+//   title String
+//   description String
+//   videoUrl String
+//   position Int
+//   isPublished Boolean @default(false)
+//   isFree Boolean @default(false)
+
+//   muxData MuxData?
+
+//   courseId String
+//   course Course @relation(fields: [courseId], references: [id])
+// }
+
+// model MuxData {
+//   id String @id @default(cuid())
+// }

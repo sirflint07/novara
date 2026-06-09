@@ -9,26 +9,36 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox"
 
-const frameworks = [
-  "Next.js",
-  "SvelteKit",
-  "Nuxt.js",
-  "Remix",
-  "Astro",
-] as const
+interface CategoryProps {
+  options: { value: string | null, label: string }[],
+  value: string | null,
+  onChange: (value: string | null) => void
+}
 
-export function CategoryDropdown() {
+export function CategoryDropdown({ options, value, onChange }: CategoryProps) {
+  
+  const selectedLabel = options.find(opt => opt.value === value)?.label || ""
+
   return (
-    <Combobox items={frameworks} defaultValue={frameworks[0]}>
-      <ComboboxInput placeholder="Select a framework" showClear />
+    <Combobox 
+      items={options} 
+      value={value ?? ""}
+      onValueChange={(newValue) => onChange(newValue || null)}
+    >
+     
+      <ComboboxInput 
+        placeholder="Select a category" 
+        showClear 
+        value={selectedLabel}
+      />
       <ComboboxContent>
-        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxEmpty>No categories found.</ComboboxEmpty>
         <ComboboxList>
-          {(item) => (
-            <ComboboxItem key={item} value={item}>
-              {item}
+          {options.map((option, i) => (
+            <ComboboxItem key={i} value={option.value || ""}>
+              {option.label}
             </ComboboxItem>
-          )}
+          ))}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

@@ -15,6 +15,19 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
     where: {
       id: courseId,
       userId: userId
+    },
+    include: {
+      attachments: {
+        orderBy: {
+          createdAt: "desc"
+        }
+      }
+    }
+  })
+
+  const categories = await db.category.findMany({
+    orderBy: {
+      name: "asc"
     }
   })
 
@@ -27,20 +40,28 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
     course.imageUrl,
     course.description,
     course.price,
-    course.categoryId
+    course.categoryId,
+    course.attachments.length > 0
   ]
 
   const completedFieldsCount = requiredFields.filter(Boolean).length
   const totalRequiredFields = requiredFields.length
 
   return (
-    <CourseClient 
+    <CourseClient
+      course={course}
       courseId={courseId}
       courseTitle={course.title}
       courseDescription={course.description}
       courseImageUrl={course.imageUrl}
       completedFieldsCount={completedFieldsCount}
       totalRequiredFields={totalRequiredFields}
+      courseCategory={course.categoryId}
+      coursePrice={course.price}
+      categories={categories.map((category) => ({ 
+        value: category.id,
+        label: category.name
+      }))}
     />
   )
 }
