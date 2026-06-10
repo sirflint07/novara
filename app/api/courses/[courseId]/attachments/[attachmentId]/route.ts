@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -6,6 +7,7 @@ export async function DELETE(
   { params }: { params: Promise<{ attachmentId: string; courseId: string }> },
 ) {
   const { attachmentId, courseId } = await params;
+  const { userId } = await auth()
 
   try {
     if (!attachmentId) {
@@ -15,11 +17,26 @@ export async function DELETE(
       );
     }
 
+    if (!userId) {
+        return new NextResponse("Unauthorized- No userId found", {status: 401})
+    }
+
     if (!courseId) {
       return NextResponse.json(
         { error: "Course ID is required" },
         { status: 400 },
       );
+    }
+
+    const courseOwner = db.course.findUnique({
+        where: {
+            id: courseId,
+            userId: userId
+        }
+    })
+
+    if (!courseOwner) {
+        return new NextResponse("User not found or User do not own course to have course access")
     }
 
     await db.attachment.delete({
