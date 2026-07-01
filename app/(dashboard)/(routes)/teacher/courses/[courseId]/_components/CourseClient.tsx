@@ -8,6 +8,7 @@ import ImageForm from "../../create/_components/image-form"
 import CategoryForm from "../../create/_components/category-form"
 import PriceForm from "../../create/_components/price-form"
 import AttachmentForm from "../../create/_components/attachment-form"
+import ChaptersForm from "../../create/_components/chapter-form"
 
 interface CourseClientProps {
   course: any;
@@ -50,7 +51,7 @@ export const CourseClient = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-12 gap-6">
         <div className="space-y-6">
           <TitleForm 
             courseId={courseId} 
@@ -79,10 +80,13 @@ export const CourseClient = ({
         
         <div className="space-y-6">
           <div className="flex items-center gap-x-3">
-            <IconBadge icon={ListCollapse} />
-            <h1>Course Chapters</h1>
+            <IconBadge icon={ListCollapse} iconSize={"sm"} variant={"default"} bgSize={"md"}/>
+            <h1 className="text-sm font-semibold text-gray-700">Create Your Course Chapters</h1>
           </div>
-          <h1>TODO Chapters</h1>
+          <ChaptersForm 
+          initialData={course}
+          courseId={courseId}
+          />
 
           <div className="space-y-4">
           <div className="flex items-center gap-x-4">

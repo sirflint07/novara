@@ -60,8 +60,8 @@ model Attachment {
 model Chapter {
   id String @id @default(cuid())
   title String
-  description String
-  videoUrl String
+  description String?
+  videoUrl String?
   position Int
   isPublished Boolean @default(false)
   isFree Boolean @default(false)
