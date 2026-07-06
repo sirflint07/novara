@@ -30,7 +30,6 @@ export async function PATCH(
         { status: 401 }
       )
     }
-
     
     const updateData: any = {}
     if (title !== undefined) updateData.title = title

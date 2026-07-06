@@ -3,6 +3,7 @@
 import { SignedIn, UserButton } from '@clerk/nextjs'
 import NavbarItems from './NavbarItems'
 import Image from 'next/image'
+import { ClientOnly } from './client-wrapper';
 
 const Navbar = () => {
   return (
@@ -22,7 +23,10 @@ const Navbar = () => {
             <NavbarItems />
             <div className='size-10 flex items-center justify-center rounded-full bg-gray-100'>
                 <SignedIn >
-                    <UserButton/>
+                    <ClientOnly>
+                        <UserButton/>
+                    </ClientOnly>
+                    
                 </SignedIn>
             </div>
         </div>

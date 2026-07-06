@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Chapter, Course } from "@prisma/client";
 import { ChaptersList } from "./chapters-list";
+import { ClientOnly } from "@/components/client-wrapper";
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -249,12 +250,14 @@ const ChaptersForm = ({
           <p className="text-gray-400 text-xs mt-1">Click "Add Chapter" to start building your course</p>
         </div>
       ) : (
-        <ChaptersList 
+        <ClientOnly fallback={<div className="p-4">Loading chapters...</div>}>
+          <ChaptersList 
           items={chapters}
           onDelete={handleDeleteChapter}
           onReorder={handleReorderChapters}
           onEdit={handleEditChapter}
         />
+        </ClientOnly>
       )}
 
       {chapters.length > 1 && !isCreating && (

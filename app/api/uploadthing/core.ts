@@ -26,18 +26,17 @@ export const ourFileRouter = {
  .onUploadComplete(() => {}),
 
  courseAttachments: f({
-    "image": { maxFileSize: "8MB" },
-    "application/pdf": { maxFileSize: "8MB" },
-    "video": { maxFileSize: "1GB" },
+    "image": { maxFileSize: "8MB", maxFileCount: 5 },
+    "application/pdf": { maxFileSize: "8MB", maxFileCount: 5 },
+    "video": { maxFileSize: "1GB", maxFileCount: 5 },
   })
     .middleware(() => authFunc())
     .onUploadComplete(() => {}),
  
  chapterVideo: f({
    video: {
-    maxFileSize: "1GB",
-    maxFileCount: 3,
-    minFileCount: 1
+    maxFileSize: "512MB",
+    maxFileCount: 1,
    }
  })
     .middleware(() => authFunc())

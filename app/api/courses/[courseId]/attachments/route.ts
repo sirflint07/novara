@@ -18,7 +18,8 @@ export async function POST(req: Request,
         return NextResponse.json({error: "Unauthorized - User not found"}, { status: 401})
     }
 
-    const { url, filename } = await req.json()
+    // const { url, filename } = await req.json()
+     const { url, filename, name } = await req.json()
 
     if (!url) {
         return new NextResponse("Attachment URL is required", { status: 400 })
@@ -38,6 +39,8 @@ export async function POST(req: Request,
     if (!courseOwner) {
         return new NextResponse("User not found for selected course", {status: 400})
     }
+
+    const attachmentName = filename || name || url.split("/").pop() || "attachment"
 
     const newAttachment = await db.attachment.create({
         data: {

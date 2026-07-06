@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignedIn, SignedOut, SignInButton, SignOutButton, SignUpButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import { Button } from './ui/button'
 
 const Sidebar = () => {
 

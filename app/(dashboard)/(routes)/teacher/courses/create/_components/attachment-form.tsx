@@ -29,30 +29,35 @@ const AttachmentForm = ({ courseId, initialData }: AttachmentFormProps) => {
     setIsEditing((current) => !current);
   };
 
-  const handleFileUpload = async (url: z.infer<typeof formSchema>["url"], fileName: string) => {
-    console.log("Received URL from upload:", url);
-    console.log("Original file name:", fileName);
-    
-    if (!url) {
-      toast.error("No file URL received");
+  const handleFileUpload = async (files: { url: string; fileName: string }[]) => {
+    if (!files.length) {
+      toast.error("No files to upload");
       return;
     }
-    
+
     setIsUploading(true);
+    
     try {
-      console.log("Sending POST request to:", `/api/courses/${courseId}/attachments`);
-      const response = await axios.post(`/api/courses/${courseId}/attachments`, { url, filename: fileName });
-      console.log("API response:", response.data);
-      
-      toggleEdit();
+      const uploadPromises = files.map((file) =>
+        axios.post(`/api/courses/${courseId}/attachments`, {
+          url: file.url,
+          filename: file.fileName,
+        })
+      );
+
+      await Promise.all(uploadPromises);
+
+      setIsEditing(false);
       router.refresh();
-      toast.success("Attachment added successfully", {
+      toast.success(`${files.length} file(s) uploaded successfully`, {
         position: "top-right",
         duration: 3000,
       });
     } catch (error) {
-      console.error("API error:", error);
-      toast.error("Failed to add attachment");
+      console.error("Upload error:", error);
+      toast.error("Failed to upload files", {
+        position: "top-center",
+      });
     } finally {
       setIsUploading(false);
     }
@@ -113,8 +118,8 @@ const AttachmentForm = ({ courseId, initialData }: AttachmentFormProps) => {
               ) : (
                 <>
                   <UploadFile 
-                    onChange={(url, fileName) => handleFileUpload(url, fileName)}
-                    endpoint="courseAttachments" 
+                    onChange={(files) => handleFileUpload(files)}
+                    endpoint="courseAttachments"
                   />
                   <p className="text-gray-500 text-xs mt-2 text-center">
                     Upload files (PDF, images, documents) - max 8MB(images) / 16MB(PDFs) / 1GB(videos)
