@@ -1,64 +1,94 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Edit2, PlusCircleIcon, Video, X, Loader2 } from "lucide-react";
 import { UploadFile } from "@/components/file-upload";
-import { Chapter, MuxData } from "@prisma/client";
-import z from "zod";
+import { Button } from "@/components/ui/button";
+import { X, Edit2, Loader2, Video, Upload } from "lucide-react";
+import { toast } from "sonner";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { Chapter } from "@prisma/client";
+import MuxPlayerWrapper from "@/components/mux-player-wrapper";
 
-interface ChapterFormProps {
-  initialData: Chapter & { muxData?: MuxData | null };
-  courseId: string;
+interface ChapterVideoFormProps {
+  initialData: Chapter & { muxData?: { playbackId: string | null } | null };
   chapterId: string;
+  courseId: string;
 }
 
-const formSchema = z.object({
-  videoUrl: z.string().min(1)
-})
-
-const ChapterVideoForm = ({ courseId, initialData, chapterId }: ChapterFormProps) => {
+const ChapterVideoForm = ({ 
+  initialData, 
+  chapterId, 
+  courseId 
+}: ChapterVideoFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [currentVideoUrl, setCurrentVideoUrl] = useState(initialData?.videoUrl);
+  const [playbackId, setPlaybackId] = useState<string | null>(
+    initialData?.muxData?.playbackId || null
+  );
+  const [videoUrl, setVideoUrl] = useState<string | null>(
+    initialData?.videoUrl || null
+  );
+  const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
-  
 
   useEffect(() => {
-    setCurrentVideoUrl(initialData?.videoUrl);
-  }, [initialData?.videoUrl]);
+    console.log("InitialData changed:", initialData);
+    if (initialData?.muxData?.playbackId) {
+      setPlaybackId(initialData.muxData.playbackId);
+    }
+    if (initialData?.videoUrl) {
+      setVideoUrl(initialData.videoUrl);
+    }
+  }, [initialData]);
 
-  const handleChapterEdit = () => {
-    setIsEditing((current) => !current);
-  };
-
-  const handleFileUpload = async (value: z.infer<typeof formSchema>) => {
-    console.log("Received URL from upload:", value.videoUrl);
-
-    if (!value) {
-      toast.error("No video URL received");
+  const handleFileUpload = async (files: { url: string; fileName: string }[]) => {
+    const video = files?.[0];
+    
+    if (!video) {
+      toast.error("No video uploaded");
       return;
     }
-    
+
     setIsUploading(true);
+    setIsProcessing(true);
+    
     try {
-      console.log("Sending PATCH request to:", `/api/courses/${courseId}/chapters/${chapterId}`);
-      const response = await axios.patch(`/api/courses/${courseId}/chapters/${chapterId}`, { videoUrl: value.videoUrl });
-      console.log("API response:", response.data);
+      const response = await axios.patch(
+        `/api/courses/${courseId}/chapters/${chapterId}`,
+        { 
+          videoUrl: video.url,
+        }
+      );
       
-      setCurrentVideoUrl(currentVideoUrl);
+      console.log("Upload response:", response.data);
+      
+      if (response.data.muxData?.playbackId) {
+        setPlaybackId(response.data.muxData.playbackId);
+      }
+      if (response.data.videoUrl) {
+        setVideoUrl(response.data.videoUrl);
+      }
+      
       setIsEditing(false);
-      toast.success("Course image updated successfully", {
+      
+      router.refresh();
+      
+      toast.success("Video uploaded successfully", {
         position: "top-right",
         duration: 3000,
       });
-      router.refresh();
+      
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 5000);
+      
     } catch (error) {
-      console.error("API error:", error);
-      toast.error("Failed to update course image");
+      console.error("[VIDEO_UPLOAD]", error);
+      toast.error("Failed to upload video", {
+        position: "top-center",
+      });
+      setIsProcessing(false);
     } finally {
       setIsUploading(false);
     }
@@ -67,23 +97,29 @@ const ChapterVideoForm = ({ courseId, initialData, chapterId }: ChapterFormProps
   return (
     <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm md:text-base font-semibold text-gray-700">Chapter Video</p>
+        <div>
+          <p className="text-sm md:text-base font-semibold text-gray-700">
+            Chapter Video
+          </p>
+          <p className="text-xs text-gray-400">
+            {playbackId ? "Video uploaded" : "No video added yet"}
+          </p>
+        </div>
         {!isEditing && (
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleChapterEdit}
+            onClick={() => setIsEditing(true)}
             className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-            disabled={isUploading}
           >
-            {currentVideoUrl ? (
+            {playbackId ? (
               <>
                 <Edit2 className="h-3.5 w-3.5 mr-1" />
-                Edit Chapter
+                Edit Video
               </>
             ) : (
               <>
-                <PlusCircleIcon className="h-3.5 w-3.5 mr-1" />
+                <Upload className="h-3.5 w-3.5 mr-1" />
                 Add Video
               </>
             )}
@@ -103,14 +139,14 @@ const ChapterVideoForm = ({ courseId, initialData, chapterId }: ChapterFormProps
               ) : (
                 <>
                   <UploadFile 
-                    onChange={(video) => handleFileUpload({ videoUrl: video[0].url })}
-                    endpoint="chapterVideo" 
+                    onChange={handleFileUpload}
+                    endpoint="chapterVideo"
                   />
                   <p className="text-gray-500 text-xs mt-2 text-center">
-                    Upload a video (max 512MB). Supported formats: MP4, MOV, AVI.
+                    Upload a video file (max 1GB)
                   </p>
-                  <p className="text-gray-500 text-xs mt-1 text-center font-semibold">
-                    (16:9) aspect ratio recommended for best display
+                  <p className="text-gray-400 text-xs mt-1 text-center">
+                    Supported formats: MP4, MOV, AVI, WebM
                   </p>
                 </>
               )}
@@ -120,7 +156,7 @@ const ChapterVideoForm = ({ courseId, initialData, chapterId }: ChapterFormProps
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleChapterEdit}
+                onClick={() => setIsEditing(false)}
                 disabled={isUploading}
               >
                 <X className="h-3.5 w-3.5 mr-1" />
@@ -129,22 +165,17 @@ const ChapterVideoForm = ({ courseId, initialData, chapterId }: ChapterFormProps
             </div>
           </div>
         ) : (
-          <div>
-            {currentVideoUrl ? (
-              <div className="relative rounded-lg overflow-hidden bg-gray-100 p-2 flex justify-center items-center aspect-video">
-                <video
-                  src={`${currentVideoUrl}`}
-                  controls
-                  width={300}
-                  height={200}
-                  className="object-contain w-full h-full rounded-lg"
-                />
-              </div>
+          <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-video">
+            {playbackId ? (
+              <MuxPlayerWrapper 
+                playbackId={playbackId}
+                className="w-full h-full bg-accent text-slate-50"
+                
+              />
             ) : (
-              <div className="bg-gray-50 rounded-lg p-8 flex flex-col items-center justify-center border-2 border-dashed border-gray-200">
-                <Video size={48} className="text-gray-400 mb-3" />
-                <p className="text-gray-500 text-sm font-medium">No video uploaded yet</p>
-                <p className="text-gray-400 text-xs mt-1">Click "Upload Video" to upload</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <Video className="h-12 w-12 mb-2" />
+                <p className="text-sm">No video available</p>
               </div>
             )}
           </div>

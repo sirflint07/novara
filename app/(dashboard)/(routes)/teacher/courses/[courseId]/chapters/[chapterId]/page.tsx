@@ -10,6 +10,7 @@ import ChapterDescriptionForm from "../_components/chapter-description-form"
 import { IconBadge } from "@/components/icon-badge"
 import ChapterAccessForm from "../_components/chapter-access-form"
 import ChapterVideoForm from "../_components/chapter-video-form"
+import { Banner } from "@/components/banner"
 
 const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; courseId: string }> }) => {
   const { chapterId, courseId } = await params
@@ -26,8 +27,14 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
       course: {
         userId: userId
       }
+    },
+    include: {
+      muxData: true
     }
   })
+
+  console.log("Chapter data:", chapter)
+  console.log("MuxData:", chapter?.muxData)
 
   if (!chapter) {
     return notFound()
@@ -45,6 +52,17 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mb-4">
+        {!chapter.isPublished && (
+    <Banner 
+      variant="warning" 
+      label="Chapter is in Draft Mode"
+      description="This chapter is not visible to students until you publish it."
+      className="mb-6"
+    />
+  )}
+      </div>
+      
       <Button
         asChild
         variant="ghost"
@@ -117,7 +135,7 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
               <p>Chapter Video</p>
             </div>
             <ChapterVideoForm 
-            initialData={chapter}
+            initialData= { chapter }
             courseId={courseId}
             chapterId={chapterId}
             />

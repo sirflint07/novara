@@ -88,7 +88,7 @@ const Sidebar = () => {
                 <p className='mt-4 flex items-center justify-center gap-1 px-5 py-2 hover:bg-red-700 cursor-pointer bg-mauve-800 text-white rounded-md'>
                   <span className='inline-block'><LogOutIcon size={15}/></span><span className='inline-block'><SignOutButton /></span>
                 </p>
-              </SignedIn>
+              </SignedIn> 
             </div>
     </div>
   )
