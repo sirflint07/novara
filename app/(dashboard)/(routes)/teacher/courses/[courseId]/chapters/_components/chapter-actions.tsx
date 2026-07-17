@@ -24,6 +24,7 @@ export default function ChapterActions({
         courseId={courseId}
         isPublished={isPublished}
         disabled={disabled}
+        chapterId={chapterId}
       />
 
       <DeleteChapterDialog

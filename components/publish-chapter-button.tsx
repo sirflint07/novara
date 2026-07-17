@@ -11,12 +11,14 @@ interface PublishChapterButtonProps {
   courseId: string;
   isPublished: boolean;
   disabled?: boolean;
+  chapterId: string
 }
 
 export const PublishChapterButton = ({
   courseId,
   isPublished,
   disabled = false,
+  chapterId
 }: PublishChapterButtonProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +28,7 @@ export const PublishChapterButton = ({
     try {
       if (isPublished) {
         await axios.patch(
-          `/api/courses/${courseId}/unpublish`
+          `/api/courses/${courseId}/chapters/${chapterId}/unpublish`
         );
         toast.success("Chapter unpublished successfully", {
           position: "top-right",
@@ -34,7 +36,7 @@ export const PublishChapterButton = ({
         });
       } else {
         await axios.patch(
-          `/api/courses/${courseId}/publish`
+          `/api/courses/${courseId}/chapters/${chapterId}/publish`
         );
         toast.success("Chapter published successfully", {
           position: "top-right",
