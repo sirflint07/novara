@@ -1,8 +1,8 @@
 import { db } from "@/lib/db"
 import { auth } from "@clerk/nextjs/server"
-import { notFound, redirect } from "next/navigation"
+import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, BookmarkCheckIcon, CheckCircle, Eye, LayoutDashboard, ListChecks, Video } from "lucide-react"
+import { ArrowLeft, BookmarkCheckIcon, BookOpen, CheckCircle, Eye, LayoutDashboard, ListChecks, Video } from "lucide-react"
 import Link from "next/link"
 import ChapterTitleForm from "../_components/chapter-title-form"
 import { cn } from "@/lib/utils"
@@ -11,6 +11,7 @@ import { IconBadge } from "@/components/icon-badge"
 import ChapterAccessForm from "../_components/chapter-access-form"
 import ChapterVideoForm from "../_components/chapter-video-form"
 import { Banner } from "@/components/banner"
+import ChapterActions from "../_components/chapter-actions"
 
 const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; courseId: string }> }) => {
   const { chapterId, courseId } = await params
@@ -37,31 +38,59 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
   console.log("MuxData:", chapter?.muxData)
 
   if (!chapter) {
-    return notFound()
-  }
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+      <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
+        <BookOpen className="h-10 w-10 text-red-500" />
+      </div>
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        Chapter Not Found
+      </h1>
+      <p className="text-gray-500 max-w-md mb-8">
+        The chapter you're looking for doesn't exist or you don't have permission to view it.
+      </p>
+      <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
+        <Link href={`/teacher/courses/${courseId}`}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Course
+        </Link>
+      </Button>
+    </div>
+  )
+}
 
   const requiredFields = [
     chapter.title,
     chapter.description,
     chapter.videoUrl,
-    chapter.isFree
+    chapter.isFree === chapter.isFree
   ]
 
   const completedFields = requiredFields.filter(Boolean).length
   const completedFieldsText = `${completedFields} of ${requiredFields.length} fields completed`
+  const isComplete = requiredFields.every(Boolean)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-4">
-        {!chapter.isPublished && (
-    <Banner 
-      variant="warning" 
-      label="Chapter is in Draft Mode"
-      description="This chapter is not visible to students until you publish it."
-      className="mb-6"
-    />
-  )}
-      </div>
+          {chapter.isPublished ? (
+      <Banner 
+        variant="success" 
+        label="Chapter is in Live Mode"
+        description="This chapter is now available to all students unless you unpublish or delete it"
+        className="mb-6"
+      />
+    ):
+    (
+      <Banner 
+        variant="warning" 
+        label="Chapter is in Draft Mode"
+        description="This chapter is not visible to students until you publish it."
+        className="mb-6"
+      />
+    )
+    }
+        </div>
       
       <Button
         asChild
@@ -74,29 +103,42 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
           Back to Course
         </Link>
       </Button>
-
-      <div className="mb-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
-            Chapter Setup
-          </h1>
-          <span className={cn(
-            "text-xs px-3 py-1 rounded-full font-medium",
-            chapter.isPublished || completedFields === 4
-              ? "bg-emerald-100 text-emerald-700" 
-              : "bg-gray-500 text-slate-100"
-          )}>
-            {chapter.isPublished || completedFields === 4 ? "Completed" : "Draft"}
-          </span>
-          <span className="text-sm text-gray-500 font-medium">
-            {completedFieldsText}
-          </span>
-          <span className={completedFields === 4 ? "rounded-full p-1 bg-emerald-600" : ""}>{completedFields === 4 && <CheckCircle color="white" className="size-3" />}</span>
+      <div className="flex items-baseline justify-between">
+          <div className="mb-8">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
+              Chapter Setup
+            </h1>
+            <span className={cn(
+              "text-xs px-3 py-1 rounded-full font-medium",
+              chapter.isPublished || completedFields === 4
+                ? "bg-emerald-100 text-emerald-700" 
+                : "bg-gray-500 text-slate-100"
+            )}>
+              {chapter.isPublished || completedFields === 4 ? "Completed" : "Draft"}
+            </span>
+            <span className="text-sm text-gray-500 font-medium">
+              {completedFieldsText}
+            </span>
+            <span className={completedFields === 4 ? "rounded-full p-1 bg-emerald-600" : ""}>{completedFields === 4 && <CheckCircle color="white" className="size-3" />}</span>
+          </div>
+          <p className="text-gray-500 text-sm mt-2">
+            Chapter {chapter.position} • Configure your chapter details
+          </p>
         </div>
-        <p className="text-gray-500 text-sm mt-2">
-          Chapter {chapter.position} • Configure your chapter details
-        </p>
+
+        <div>
+          <ChapterActions
+          disabled={!isComplete}
+          courseId={courseId}
+          chapterId={chapterId}
+          isPublished={chapter.isPublished}
+          />
+        </div>
       </div>
+      
+
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-2 space-y-8">

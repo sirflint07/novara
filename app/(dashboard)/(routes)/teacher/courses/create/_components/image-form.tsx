@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Edit2, PlusCircleIcon, ImageIcon, X, Loader2 } from "lucide-react";
-import { UploadFile } from "@/components/file-upload";
 import Image from "next/image";
+import { SingleFileUpload } from "@/components/single-upload";
 
 interface ImageFormProps {
   initialData: {
@@ -97,7 +97,7 @@ const ImageForm = ({ courseId, initialData }: ImageFormProps) => {
                 </div>
               ) : (
                 <>
-                  <UploadFile 
+                  <SingleFileUpload 
                     onChange={(url) => handleFileUpload(url)}
                     endpoint="courseImage" 
                   />
@@ -133,6 +133,7 @@ const ImageForm = ({ courseId, initialData }: ImageFormProps) => {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 30vw"
                   width={300}
                   height={200}
+                  style={{ width: "auto", height: "auto" }}
                   className="object-contain w-full h-full rounded-lg"
                 />
               </div>

@@ -6,9 +6,11 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignedIn, SignedOut, SignInButton, SignOutButton, SignUpButton } from '@clerk/nextjs'
 import Link from 'next/link'
+import { useIsMounted } from '@/hooks/is-mounted'
 
 const Sidebar = () => {
 
+  const isMounted = useIsMounted()
   const pathname = usePathname()
   const isTeacher = pathname.startsWith('/teacher')
   const isCoursePage = pathname.startsWith('/course') || pathname.includes('/course/')
@@ -49,7 +51,8 @@ const Sidebar = () => {
 
   
   return (
-    <div className='flex flex-col shadow-sm overflow-y-auto bg-white h-full md:w-[20vw] lg:w-[15vw]'>
+    <>
+    { isMounted && <div className='flex flex-col shadow-sm overflow-y-auto bg-white h-full md:w-[20vw] lg:w-[15vw]'>
         <div className='py-4'>
           <Link href='/' className='flex gap-1 items-center pb-1'>
             <Image 
@@ -90,7 +93,8 @@ const Sidebar = () => {
                 </p>
               </SignedIn> 
             </div>
-    </div>
+    </div>}
+    </>
   )
 }
 

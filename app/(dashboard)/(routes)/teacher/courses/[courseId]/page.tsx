@@ -2,7 +2,6 @@ import { db } from "@/lib/db"
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { CourseClient } from "./_components/CourseClient"
-import { NextResponse } from "next/server"
 
 const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> }) => {
   const { courseId } = await params
@@ -31,22 +30,9 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
     }
   })
 
-  const courseOwner = await db.course.findUnique({
-    where: {
-      id: courseId,
-      userId: userId
-    }
-  })
-
-  if (!courseOwner) {
-    return new NextResponse("Unauthorized- You do not own this course", { status: 401 })
+  if (!course) {
+    return redirect('/teacher/courses')
   }
-
-  const lastChapter =  await db.chapter.findFirst({
-    where: {
-      courseId: courseId
-    }
-  })
 
   const categories = await db.category.findMany({
     orderBy: {
@@ -54,22 +40,32 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
     }
   })
 
-  if (!course) {
-    return redirect('/teacher/courses')
-  }
-
-  const requiredFields = [
+  const courseFields = [
     course.title,
     course.imageUrl,
     course.description,
     course.price,
-    course.categoryId,
-    course.attachments.length > 0,
-    course.chapters.some((chapter) => chapter.isPublished)
+    course.categoryId
   ]
+  
+  const hasAllCourseFields = courseFields.every(Boolean)
+  const hasAttachments = course.attachments.length > 0
+  const hasChapters = course.chapters.length > 0
+  const hasPublishedChapters = course.chapters.some((chapter) => chapter.isPublished)
+  const allChaptersHaveVideo = course.chapters.every((chapter) => chapter.videoUrl)
 
+  const requiredFields = [
+    ...courseFields,
+    hasAttachments,
+    hasChapters
+  ]
+  
   const completedFieldsCount = requiredFields.filter(Boolean).length
   const totalRequiredFields = requiredFields.length
+
+  const canPublish = hasAllCourseFields && hasChapters && !hasPublishedChapters
+
+  const isComplete = hasAllCourseFields && hasChapters && allChaptersHaveVideo
 
   return (
     <CourseClient
@@ -86,6 +82,11 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
         value: category.id,
         label: category.name
       }))}
+      canPublish={canPublish}
+      isComplete={isComplete}
+      hasPublishedChapters={hasPublishedChapters}
+      hasAllCourseFields={hasAllCourseFields}
+      hasChapters={hasChapters}
     />
   )
 }

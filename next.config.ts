@@ -9,8 +9,16 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
     ],
-  }
+  },
+
+  experimental: {
+    optimizeCss: true,
+  },
 };
 
 export default nextConfig;

@@ -16,6 +16,112 @@ const mux = new Mux({
   tokenSecret: process.env.MUX_TOKEN_SECRETY
 });
 
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ courseId: string; chapterId: string }> }
+) {
+  try {
+    const { courseId, chapterId } = await params;
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const courseOwner = await db.course.findUnique({
+      where: {
+        id: courseId,
+        userId: userId,
+      },
+    });
+
+    if (!courseOwner) {
+      return NextResponse.json(
+        { error: "You don't own this course" },
+        { status: 401 }
+      );
+    }
+
+    const chapter = await db.chapter.findUnique({
+      where: {
+        id: chapterId,
+        courseId: courseId,
+      },
+      include: {
+        muxData: true,
+      },
+    });
+
+    if (!chapter) {
+      return NextResponse.json(
+        { error: "Chapter not found" },
+        { status: 404 }
+      );
+    }
+
+    if (chapter?.muxData?.assetId && mux && chapter.muxData && chapter.videoUrl) {
+      try {
+        console.log(`Deleting Mux asset: ${chapter?.muxData?.assetId}`);
+        await mux.video.assets.delete(chapter?.muxData?.assetId)
+        console.log("Mux asset deleted successfully");
+      } catch (muxError) {
+        console.error("[MUX_DELETE_ERROR]", muxError);
+      }
+    }
+
+    const deletedChapter = await db.chapter.delete({
+      where: {
+        id: chapterId,
+        courseId: courseId,
+      },
+      include: {
+        muxData: true,
+      },
+    });
+
+    const publishedChapters =  await db.chapter.findMany({
+      where: {
+        courseId: courseId?? chapter.courseId,
+        isPublished: true
+      }
+    })
+
+    if (!publishedChapters.length) {
+      await db.course.update({
+        where: {
+          id: courseId,
+          userId: userId
+        },
+        data: {
+          isPublished: false
+        }
+      })
+    }
+    return NextResponse.json(
+      {
+        message: "Chapter deleted successfully",
+        deletedChapter: {
+          id: deletedChapter.id,
+          title: deletedChapter.title,
+          muxDeleted: !!chapter.muxData,
+        },
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("[CHAPTER_DELETE]", error);
+    return NextResponse.json(
+      {
+        error: "Failed to delete chapter",
+        message: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ courseId: string; chapterId: string }> }

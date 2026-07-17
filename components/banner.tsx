@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircleIcon, Info, XCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const bannerVariants = cva(
-  "flex items-center gap-3 px-4 py-4 rounded-lg border text-sm w-full transition-all duration-200",
+  "flex items-center gap-3 px-4 py-4 rounded-lg border text-sm transition-all duration-200",
   {
     variants: {
       variant: {
@@ -42,7 +42,7 @@ interface BannerProps extends VariantProps<typeof bannerVariants> {
   label: string;
   description?: string;
   className?: string;
-  onDismiss?: () => void;
+  onDismiss?: () => Boolean;
   icon?: React.ReactNode;
 }
 
@@ -59,33 +59,38 @@ export const Banner = ({
   const Icon = iconMap[variant || "info"];
 
   return (
-    <div className={cn(bannerVariants({ variant, size, rounded }), className)}>
-      <div className="shrink-0">
-        {icon || (
-          <Icon className={cn(
-            "h-5 w-5",
-            variant === "warning" && "text-amber-500",
-            variant === "success" && "text-emerald-500",
-            variant === "info" && "text-blue-500",
-            variant === "error" && "text-red-500",
-          )} />
+    <>
+      {
+        !onDismiss &&
+        <div className={cn(bannerVariants({ variant, size, rounded }), className)}>
+        <div className="shrink-0">
+          {icon || (
+            <Icon className={cn(
+              "h-5 w-5",
+              variant === "warning" && "text-amber-500",
+              variant === "success" && "text-emerald-500",
+              variant === "info" && "text-blue-500",
+              variant === "error" && "text-red-500",
+            )} />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium">{label}</p>
+          {description && (
+            <p className="text-xs opacity-80 mt-0.5">{description}</p>
+          )}
+        </div>
+        {onDismiss && (
+          <button
+            onClick={onDismiss}
+            className="ml-4 text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+            aria-label="Dismiss banner"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium">{label}</p>
-        {description && (
-          <p className="text-xs opacity-80 mt-0.5">{description}</p>
-        )}
-      </div>
-      {onDismiss && (
-        <button
-          onClick={onDismiss}
-          className="ml-4 text-gray-400 hover:text-gray-600 transition-colors shrink-0"
-          aria-label="Dismiss banner"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      )}
-    </div>
+      </div>}
+    </>
+    
   );
 };

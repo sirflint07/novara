@@ -6,9 +6,11 @@ import Sidebar from './Sidebar'
 import { usePathname } from 'next/navigation'
 import { Button } from './ui/button'
 import Link from 'next/link'
+import { useIsMounted } from '@/hooks/is-mounted'
 
 const NavbarItems = () => {
     const pathname = usePathname()
+    const isMounted = useIsMounted()
 
     const isTeacherPage = pathname.startsWith('/teacher')
     const isCoursePage = pathname.startsWith('/course') || pathname.includes('/course/')
@@ -58,7 +60,7 @@ const NavbarItems = () => {
         </div>
         </div>
         <div>
-           <Sheet>
+           {isMounted && <Sheet>
             <SheetTrigger className="md:hidden hover:opacity-85 transition">
                 <Menu className='size-8' />
             </SheetTrigger>
@@ -66,7 +68,7 @@ const NavbarItems = () => {
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <Sidebar />
             </SheetContent>
-            </Sheet> 
+            </Sheet>} 
         </div>
     </div>
   )
