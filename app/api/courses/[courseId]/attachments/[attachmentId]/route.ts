@@ -28,7 +28,7 @@ export async function DELETE(
       );
     }
 
-    const courseOwner = db.course.findUnique({
+    const courseOwner = await db.course.findUnique({
         where: {
             id: courseId,
             userId: userId
