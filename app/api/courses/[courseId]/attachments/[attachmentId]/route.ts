@@ -4,39 +4,45 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ attachmentId: string; courseId: string }> },
+  { params }: { params: Promise<{ courseId: string; attachmentId: string }> }
 ) {
-  const { attachmentId, courseId } = await params;
-  const { userId } = await auth()
-
   try {
-    if (!attachmentId) {
-      return NextResponse.json(
-        { error: "Attachment ID is required" },
-        { status: 400 },
-      );
-    }
+    const { courseId, attachmentId } = await params;
+    const { userId } = await auth();
 
     if (!userId) {
-        return new NextResponse("Unauthorized- No userId found", {status: 401})
+      return NextResponse.json(
+        { error: "Unauthorized - No userId found" },
+        { status: 401 }
+      );
     }
 
     if (!courseId) {
       return NextResponse.json(
         { error: "Course ID is required" },
-        { status: 400 },
+        { status: 400 }
+      );
+    }
+
+    if (!attachmentId) {
+      return NextResponse.json(
+        { error: "Attachment ID is required" },
+        { status: 400 }
       );
     }
 
     const courseOwner = await db.course.findUnique({
-        where: {
-            id: courseId,
-            userId: userId
-        }
-    })
+      where: {
+        id: courseId,
+        userId: userId,
+      },
+    });
 
     if (!courseOwner) {
-        return new NextResponse("User not found or User do not own course to have course access")
+      return NextResponse.json(
+        { error: "User not found or User does not own this course" },
+        { status: 403 }
+      );
     }
 
     const attachment = await db.attachment.findUnique({
@@ -54,16 +60,21 @@ export async function DELETE(
     }
 
     await db.attachment.delete({
-        where: {
-            id: attachmentId,
-            courseId: courseId
-        }
-    })
-    return NextResponse.json({ message: "Attachment deleted successfully" }, { status: 200 });
+      where: {
+        id: attachmentId,
+        courseId: courseId,
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Attachment deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
+    console.error("[ATTACHMENT_DELETE]", error);
     return NextResponse.json(
       { error: "Failed to delete attachment" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
