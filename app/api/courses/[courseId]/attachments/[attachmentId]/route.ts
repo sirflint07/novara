@@ -39,6 +39,20 @@ export async function DELETE(
         return new NextResponse("User not found or User do not own course to have course access")
     }
 
+    const attachment = await db.attachment.findUnique({
+      where: {
+        id: attachmentId,
+        courseId: courseId,
+      },
+    });
+
+    if (!attachment) {
+      return NextResponse.json(
+        { error: "Attachment not found" },
+        { status: 404 }
+      );
+    }
+
     await db.attachment.delete({
         where: {
             id: attachmentId,
