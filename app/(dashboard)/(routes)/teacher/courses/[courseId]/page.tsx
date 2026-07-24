@@ -65,7 +65,8 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
 
   const canPublish = hasAllCourseFields && hasChapters && !hasPublishedChapters
 
-  const isComplete = hasAllCourseFields && hasChapters && allChaptersHaveVideo
+  const isComplete = hasAllCourseFields && hasChapters && hasPublishedChapters
+
 
   return (
     <CourseClient
@@ -82,7 +83,7 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
         value: category.id,
         label: category.name
       }))}
-      canPublish={canPublish}
+      canPublish={isComplete || canPublish}
       isComplete={isComplete}
       hasPublishedChapters={hasPublishedChapters}
       hasAllCourseFields={hasAllCourseFields}

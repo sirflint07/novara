@@ -20,14 +20,14 @@ import { Button } from "@/components/ui/button";
 
 interface DeleteCourseDialogProps {
   courseId: string;
-  chapterTitle?: string;
+  courseTitle?: string;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
 
 export const DeleteCourseDialog = ({
   courseId,
-  chapterTitle,
+  courseTitle,
   trigger,
   onSuccess,
 }: DeleteCourseDialogProps) => {
@@ -41,7 +41,7 @@ export const DeleteCourseDialog = ({
     try {
       await axios.delete(`/api/courses/${courseId}`);
       
-      toast.success("Chapter deleted successfully", {
+      toast.success("Course deleted successfully", {
         position: "top-right",
         duration: 3000,
       });
@@ -55,7 +55,7 @@ export const DeleteCourseDialog = ({
       }
     } catch (error) {
       console.error("[Course_DELETE]", error);
-      toast.error("Failed to delete chapter. Please try again.", {
+      toast.error("Failed to delete course. Please try again.", {
         position: "top-center",
       });
     } finally {
@@ -80,8 +80,8 @@ export const DeleteCourseDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Course</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{chapterTitle || "this chapter"}"? 
-            This action cannot be undone. All content within this chapter will be permanently removed.
+            Are you sure you want to delete "{courseTitle || "this chapter"}"? 
+            This action cannot be undone. All content within this course will be permanently removed.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

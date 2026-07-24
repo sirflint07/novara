@@ -57,8 +57,6 @@ const ChapterDescriptionForm = ({
   };
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log("=== FORM SUBMISSION STARTED ===");
-    console.log("Values being submitted:", values);
     console.log("Course ID:", courseId);
     console.log("Chapter ID:", chapterId);
     
@@ -125,7 +123,6 @@ const ChapterDescriptionForm = ({
                           <Editor
                             value={field.value || ""}
                             onChange={(content) => {
-                              console.log("Editor onChange triggered, content length:", content?.length || 0);
                               field.onChange(content);
                             }}
                           />

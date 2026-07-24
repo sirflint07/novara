@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertCircle, CheckCircle, DollarSignIcon, File, Info, LayoutDashboard, ListCollapse, XCircle } from "lucide-react"
+import { AlertCircle, Check, CheckCircle, DollarSignIcon, File, Info, LayoutDashboard, ListCollapse, X, XCircle } from "lucide-react"
 import TitleForm from "../../create/_components/title-form"
 import { IconBadge } from "@/components/icon-badge"
 import DescriptionForm from "../../create/_components/description-form"
@@ -13,6 +13,7 @@ import AttachmentForm from "../../create/_components/attachment-form"
 import { Banner } from "@/components/banner"
 import CourseActions from "./course-actions"
 import { cn } from "@/lib/utils"
+import { useIsMounted } from "@/hooks/is-mounted"
 
 interface CourseClientProps {
   course: Course & { chapters: any[], attachments: any[] }
@@ -93,6 +94,9 @@ export const CourseClient = ({
 
   const publishStatus = getPublishStatus()
 
+  const isMounted = useIsMounted()
+  if (!isMounted) return null
+
   return (
     <>
       <div className="max-w-4xl lg:max-w-6xl mx-auto pb-12 pt-8 lg:-pl-16 pl-0">
@@ -130,8 +134,10 @@ export const CourseClient = ({
           <div className="pl-4 md:pl-0 mb-8 md:mb-0">
             <CourseActions
               courseId={courseId}
-              disabled={isComplete}
-              isPublished={course.isPublished}
+              disabled={isComplete === false}
+              isPublished={course.isPublished && isComplete}
+              canPublish={canPublish == false}
+              courseTitle={courseTitle}
             />
           </div>
         </div>
@@ -221,19 +227,19 @@ export const CourseClient = ({
                     <span
                       className={cn(
                         "flex items-center gap-2 text-sm font-medium",
-                        !hasPublishedChapters
+                        hasPublishedChapters
                           ? "text-emerald-600"
                           : "text-amber-600",
                       )}
                     >
                       {!hasPublishedChapters ? (
                         <>
-                          <CheckCircle className="h-4 w-4" />
+                          <X className="h-4 w-4" />
                           None published
                         </>
                       ) : (
                         <>
-                          <AlertCircle className="h-4 w-4" />
+                          <Check className="h-4 w-4" />
                           {
                             course.chapters?.filter((ch) => ch.isPublished)
                               .length
@@ -253,10 +259,10 @@ export const CourseClient = ({
                     <span
                       className={cn(
                         "flex items-center gap-2 text-sm font-bold",
-                        canPublish ? "text-emerald-600" : "text-red-500",
+                        hasPublishedChapters && hasAllCourseFields ? "text-emerald-600" : "text-red-500",
                       )}
                     >
-                      {canPublish ? (
+                      {hasPublishedChapters && hasAllCourseFields ? (
                         <>
                           <CheckCircle className="h-5 w-5" />
                           Yes

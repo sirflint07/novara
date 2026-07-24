@@ -5,7 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Chapter } from "@prisma/client";
-import { GripVertical, X, Edit2 } from "lucide-react";
+import { GripVertical, Edit2, Trash } from "lucide-react";
 
 interface SortableChapterItemProps {
   chapter: Chapter;
@@ -86,7 +86,7 @@ export const SortableChapterItem = ({
       </div>
 
       
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
           size="sm"
@@ -101,7 +101,7 @@ export const SortableChapterItem = ({
           onClick={() => onDelete(chapter.id)}
           className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
         >
-          <X className="h-3.5 w-3.5" />
+          <Trash className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
