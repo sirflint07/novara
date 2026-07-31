@@ -38,7 +38,6 @@ export async function GET(req: Request) {
       );
     }
 
-    // ✅ Get query parameters
     const url = new URL(req.url);
     const search = url.searchParams.get("search") || "";
     const category = url.searchParams.get("category") || "all";
@@ -48,12 +47,10 @@ export async function GET(req: Request) {
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "10");
 
-    // ✅ Build where clause
     const where: any = {
       userId: userId,
     };
 
-    // ✅ Search filter
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
@@ -61,26 +58,21 @@ export async function GET(req: Request) {
       ];
     }
 
-    // ✅ Category filter
     if (category !== "all") {
       where.categoryId = category;
     }
 
-    // ✅ Status filter
     if (status === "published") {
       where.isPublished = true;
     } else if (status === "draft") {
       where.isPublished = false;
     }
 
-    // ✅ Build order by
     const orderBy: any = {};
     orderBy[sortBy] = sortOrder;
 
-    // ✅ Calculate pagination
     const skip = (page - 1) * limit;
 
-    // ✅ Execute queries
     const [courses, totalCount, categories] = await Promise.all([
       db.course.findMany({
         where,
@@ -120,7 +112,6 @@ export async function GET(req: Request) {
       }),
     ]);
 
-    // Format courses with stats
     const formattedCourses = courses.map((course) => {
       const totalChapters = course.chapters.length;
       const publishedChapters = course.chapters.filter(

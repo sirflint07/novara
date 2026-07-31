@@ -84,7 +84,6 @@ export default function TeachersCourses() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // ✅ Fetch courses with filters
   const fetchCourses = async () => {
     setLoading(true);
     try {
@@ -114,17 +113,14 @@ export default function TeachersCourses() {
     }
   };
 
-  // ✅ Fetch when filters change
   useEffect(() => {
     fetchCourses();
   }, [searchTerm, selectedCategory, filterStatus, sortBy, sortOrder, currentPage]);
 
-  // ✅ Reset page when filters change (except page)
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory, filterStatus, sortBy, sortOrder]);
 
-  // Handlers
   const handleSort = (newSortBy: typeof sortBy) => {
     if (sortBy === newSortBy) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -144,7 +140,6 @@ export default function TeachersCourses() {
 
   const hasActiveFilters = searchTerm || selectedCategory !== "all" || filterStatus !== "all";
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
@@ -175,7 +170,6 @@ export default function TeachersCourses() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
       <div className="max-w-6xl mx-auto px-4 py-4 md:py-8 md:px-6 lg:px-8">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-blue-600">
@@ -193,7 +187,6 @@ export default function TeachersCourses() {
           </Link>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           <div className="bg-white rounded-xl p-3 md:p-4 border border-gray-100 shadow-sm">
             <p className="text-xs md:text-sm text-gray-500">Total Courses</p>
@@ -215,10 +208,8 @@ export default function TeachersCourses() {
           </div>
         </div>
 
-        {/* Search and Filters */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 md:p-4 mb-4 md:mb-6">
           <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -237,7 +228,6 @@ export default function TeachersCourses() {
               )}
             </div>
 
-            {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-full md:w-45 h-10 text-sm">
                 <SelectValue placeholder="All Categories" />
@@ -290,7 +280,6 @@ export default function TeachersCourses() {
               </button>
             </div>
 
-            {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full md:w-auto h-10 gap-2 text-sm">
@@ -324,7 +313,6 @@ export default function TeachersCourses() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Clear Filters */}
             {hasActiveFilters && (
               <Button
                 variant="ghost"
@@ -337,7 +325,6 @@ export default function TeachersCourses() {
             )}
           </div>
 
-          {/* Active Filters Badges */}
           {hasActiveFilters && (
             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
               {searchTerm && (
@@ -377,7 +364,6 @@ export default function TeachersCourses() {
           )}
         </div>
 
-        {/* Results count */}
         <div className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
           Showing {courses.length} of {totalCourses} courses
         </div>
@@ -407,9 +393,8 @@ export default function TeachersCourses() {
             )}
           </div>
         ) : (
-          // Your existing course list rendering
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* List Header */}
+
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-xs font-medium text-gray-500 uppercase tracking-wider">
               <div className="col-span-4">Course</div>
               <div className="col-span-2">Status</div>
@@ -418,7 +403,7 @@ export default function TeachersCourses() {
               <div className="col-span-2 text-right">Actions</div>
             </div>
 
-            {/* Course Items */}
+            
             <div className="divide-y divide-gray-100">
               {courses.map((course) => (
                 <div
@@ -426,7 +411,7 @@ export default function TeachersCourses() {
                   suppressHydrationWarning
                   className="group grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center px-3 md:px-6 py-3 md:py-4 hover:bg-gray-50/50 transition-colors"
                 >
-                  {/* Course Info */}
+                
                   <div className="col-span-1 md:col-span-4 flex items-center gap-3 min-w-0">
                     <div className="h-12 w-12 md:h-12 md:w-16 rounded-lg bg-linear-to-br from-blue-100 to-indigo-100 shrink-0 overflow-hidden relative">
                       {course.imageUrl ? (
@@ -454,7 +439,6 @@ export default function TeachersCourses() {
                     </div>
                   </div>
 
-                  {/* Status */}
                   <div className="col-span-1 md:col-span-2 mt-1 md:mt-0">
                     <span
                       className={cn(
