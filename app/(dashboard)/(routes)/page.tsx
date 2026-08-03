@@ -24,9 +24,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 export default function DashboardHome() {
-  // Mock data - replace with real data from your API
   const stats = [
     { label: "Total Courses", value: "14", icon: BookOpen, change: "+2", changeType: "up" },
     { label: "Total Students", value: "1,284", icon: Users, change: "+18%", changeType: "up" },
@@ -48,6 +48,8 @@ export default function DashboardHome() {
     { id: 4, user: "John Smith", action: "enrolled in", course: "Python for Data Science", time: "3 hours ago", avatar: "JS" },
   ];
 
+  const { isLoaded, isSignedIn, user} = useUser()
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
       <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 lg:px-8">
@@ -55,7 +57,7 @@ export default function DashboardHome() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              Welcome back, 👋
+              Welcome back, {user?.fullName}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               Here's what's happening with your courses today

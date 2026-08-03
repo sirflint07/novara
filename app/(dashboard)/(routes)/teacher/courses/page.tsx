@@ -16,6 +16,8 @@ import {
   ArrowUpDown,
   ChevronDown,
   Verified,
+  Trash,
+  Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -37,6 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 
 interface Course {
   id: string;
@@ -139,6 +142,36 @@ export default function TeachersCourses() {
   };
 
   const hasActiveFilters = searchTerm || selectedCategory !== "all" || filterStatus !== "all";
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [id, setId] = useState<string | null>("")
+  const router = useRouter()
+  const handleDelete = async (id: string) => {
+      setIsLoading(true);
+      
+      try {
+        setId(id)
+        const response = await axios.delete(`/api/courses/${id}`);
+        console.log(response.data)
+        setCourses((prevCourses) => prevCourses.filter((course) => course.id !== id));
+        
+        toast.success("Course deleted successfully", {
+          position: "top-right",
+          duration: 3000,
+        });
+
+        router.refresh()
+        console.log("Delete successful", id)
+      } catch (error) {
+        console.error("[Course_DELETE]", error);
+        toast.error("Failed to delete course. Please try again.", {
+          position: "top-center",
+        });
+      } finally {
+        setIsLoading(false);
+        setId("")
+      }
+    };
 
   if (loading) {
     return (
@@ -399,11 +432,11 @@ export default function TeachersCourses() {
               <div className="col-span-4">Course</div>
               <div className="col-span-2">Status</div>
               <div className="col-span-2">Chapters</div>
-              <div className="col-span-2">Students</div>
+              <div className="col-span-1">Price</div>
+              <div className="col-span-1">Students</div>
               <div className="col-span-2 text-right">Actions</div>
             </div>
-
-            
+         
             <div className="divide-y divide-gray-100">
               {courses.map((course) => (
                 <div
@@ -452,7 +485,6 @@ export default function TeachersCourses() {
                     </span>
                   </div>
 
-                  {/* Chapters */}
                   <div className="col-span-1 md:col-span-2 mt-1 md:mt-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">
@@ -471,40 +503,61 @@ export default function TeachersCourses() {
                     </div>
                   </div>
 
-                  {/* Students */}
-                  <div className="col-span-1 md:col-span-2 mt-1 md:mt-0">
+                  <div className="col-span-1 md:col-span-1 mt-1 md:mt-0">
+                    <span
+                      className={cn(
+                        "text-sm px-2 py-0.5 md:px-2.5 md:py-1 rounded-full font-medium inline-block",
+                      )}
+                    >
+                      ${course.price}
+                    </span>
+                  </div>
+
+                  <div className="col-span-1 md:col-span-1 mt-1 md:mt-0">
                     <span className="text-sm text-gray-600 flex items-center gap-1">
                       <Users className="h-3.5 w-3.5 text-gray-400" />
                       {course.totalStudents}
                     </span>
                   </div>
 
-                  {/* Actions */}
                   <div className="col-span-1 md:col-span-2 flex items-center justify-end gap-1 mt-2 md:mt-0">
                     <Link href={`/teacher/courses/${course.id}`}>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600"
-                      >
-                        <Eye className="h-4 w-4" />
+                        className="size-8 p-0 text-gray-400 hover:text-blue-600"
+                    >
+                        <Eye className="size-4" />
                       </Button>
                     </Link>
                     <Link href={`/teacher/courses/${course.id}`}>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600"
+                        className="size-8 p-0 text-gray-400 hover:text-blue-600"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="size-4" />
                       </Button>
                     </Link>
+                      { isLoading && id === course.id ? (
+                        <div>
+                          <Loader className="animate-spin size-5"/>
+                        </div>
+                      ) : (
+                        <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(course.id)}
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash className="size-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 md:px-4 py-3 bg-gray-50 border-t border-gray-100">
                 <div className="text-xs md:text-sm text-gray-500 order-2 sm:order-1">

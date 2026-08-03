@@ -13,7 +13,7 @@ const NavbarItems = () => {
     const isMounted = useIsMounted()
 
     const isTeacherPage = pathname.startsWith('/teacher')
-    const isCoursePage = pathname.startsWith('/course') || pathname.includes('/course/')
+    const isCoursePage = pathname.startsWith('/courses') || pathname.includes('/courses/')
 
     const navMeunuOptions = [
         {

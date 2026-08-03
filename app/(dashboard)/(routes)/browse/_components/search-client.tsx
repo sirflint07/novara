@@ -8,6 +8,8 @@ import { Category } from "@prisma/client";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { IconBadge } from "@/components/icon-badge";
+import { BookOpen } from "lucide-react";
 
 interface Course {
   id: string;
@@ -145,13 +147,13 @@ export default function SearchPageClient() {
                     {course.title}
                   </h3>
                   
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                  <p className="md:text-sm xl:text-xs text-gray-500 mt-1 line-clamp-2">
                     {course.description}
                   </p>
                   
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <span>{course.publishedChapters}/{course.totalChapters} chapters</span>
+                      <IconBadge icon={BookOpen} variant={"success"}/> <span className="font-semibold text-slate-600">{course.totalChapters} { course.totalChapters === 1 ? "chapter" : "chapters"}</span>
                     </div>
                     {course.price ? (
                       <span className="font-bold text-indigo-600">${course.price}</span>
