@@ -7,24 +7,15 @@ import {
   DollarSign, 
   TrendingUp, 
   TrendingDown,
-  Calendar,
   Bell,
   Search,
-  Star,
   Award,
-  PlayCircle,
   ChevronRight,
-  MoreVertical,
-  UserPlus,
-  FileText,
-  Settings,
-  Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import Image from "next/image";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 export default function DashboardHome() {
   const stats = [
@@ -53,7 +44,7 @@ export default function DashboardHome() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
       <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 lg:px-8">
-        {/* Header */}
+       
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
@@ -81,7 +72,7 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Stats Grid */}
+       
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, index) => (
             <div
@@ -112,9 +103,9 @@ export default function DashboardHome() {
           ))}
         </div>
 
-        {/* Main Content Grid */}
+       
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Courses Section */}
+         
           <div className="lg:col-span-2">
             <div className="bg-white/70 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
@@ -197,7 +188,6 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-linear-to-br from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-lg">
               <h3 className="font-semibold mb-2">Create New Course</h3>
               <p className="text-sm text-indigo-100 mb-4">Ready to share your knowledge with the world?</p>

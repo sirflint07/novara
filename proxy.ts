@@ -4,7 +4,8 @@ const isPublicPath = createRouteMatcher([
   '/',
   '/sign-in',
   '/sign-up',
-  '/api/uploadthing'
+  '/api/uploadthing',
+  '/api/webhooks/clerk'
 ])
 
 export default clerkMiddleware(

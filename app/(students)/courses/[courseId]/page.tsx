@@ -1,7 +1,8 @@
-export default function Page() {
+export default async function Page({params} : {params: Promise<{courseId: string}>}) {
+    const {courseId} = await params
     return (
         <div>
-            <h1>Course Page</h1>
+            <h1>{courseId}</h1>
         </div>
     );
 }

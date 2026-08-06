@@ -1,0 +1,307 @@
+
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   url = env("DATABASE_URL")
+// }
+
+
+// enum UserRole {
+//   STUDENT
+//   INSTRUCTOR
+//   ADMIN
+// }
+
+// model User {
+//   id          String   @id @default(cuid())
+//   clerkId     String   @unique
+//   email       String   @unique
+//   name        String?
+//   avatarUrl   String?
+//   role        UserRole @default(STUDENT)
+  
+//   enrollments Enrollment[]
+//   purchases   Purchases[]
+//   userProgress UserProgress[]
+//   blogPosts   BlogPost[]
+//   blogComments BlogComment[]
+//   blogLikes   BlogLike[]
+//   courses     Course[]
+  
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+  
+//   @@map("users")
+// }
+
+
+// model BlogPost {
+//   id          String    @id @default(cuid())
+//   title       String
+//   slug        String    @unique
+//   excerpt     String?
+//   content     String    @db.Text
+//   coverImage  String?
+//   featuredImage String?
+  
+//   status      BlogStatus @default(DRAFT)
+//   isFeatured  Boolean    @default(false)
+//   isPublished Boolean    @default(false)
+//   publishedAt DateTime?
+  
+//   authorId    String
+//   author      User       @relation(fields: [authorId], references: [id])
+  
+//   categories  BlogCategory[] @relation("PostCategories")
+//   tags        BlogTag[]     @relation("PostTags")
+//   comments    BlogComment[]
+//   likes       BlogLike[]
+  
+//   metaTitle   String?
+//   metaDescription String?
+//   metaKeywords String?
+  
+//   createdAt   DateTime   @default(now())
+//   updatedAt   DateTime   @updatedAt
+  
+//   @@index([authorId])
+//   @@index([status])
+//   @@index([publishedAt])
+//   @@index([slug])
+//   @@index([isPublished])
+//   @@map("blog_posts")
+// }
+
+// model BlogCategory {
+//   id          String    @id @default(cuid())
+//   name        String    @unique
+//   slug        String    @unique
+//   description String?
+//   posts       BlogPost[] @relation("PostCategories")
+//   createdAt   DateTime  @default(now())
+//   updatedAt   DateTime  @updatedAt
+  
+//   @@map("blog_categories")
+// }
+
+// model BlogTag {
+//   id          String    @id @default(cuid())
+//   name        String    @unique
+//   slug        String    @unique
+//   posts       BlogPost[] @relation("PostTags")
+//   createdAt   DateTime  @default(now())
+//   updatedAt   DateTime  @updatedAt
+  
+//   @@map("blog_tags")
+// }
+
+// model BlogComment {
+//   id          String    @id @default(cuid())
+//   content     String    @db.Text
+//   postId      String
+//   post        BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+//   authorId    String
+//   author      User      @relation(fields: [authorId], references: [id])
+//   parentId    String?
+//   parent      BlogComment? @relation("CommentReplies", fields: [parentId], references: [id])
+//   replies     BlogComment[] @relation("CommentReplies")
+  
+//   isApproved  Boolean   @default(true)
+//   createdAt   DateTime  @default(now())
+//   updatedAt   DateTime  @updatedAt
+  
+//   @@index([postId])
+//   @@index([authorId])
+//   @@index([createdAt])
+//   @@map("blog_comments")
+// }
+
+// model BlogLike {
+//   id          String    @id @default(cuid())
+//   postId      String
+//   post        BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+//   userId      String
+//   user        User      @relation(fields: [userId], references: [id])
+  
+//   createdAt   DateTime  @default(now())
+  
+//   @@unique([postId, userId])
+//   @@index([postId])
+//   @@map("blog_likes")
+// }
+
+// enum BlogStatus {
+//   DRAFT
+//   REVIEW
+//   PUBLISHED
+//   ARCHIVED
+// }
+
+
+// model Course {
+//   id String @id @default(cuid())
+//   userId String
+//   title String @db.Text
+//   description String @db.Text
+//   imageUrl String? @db.Text
+//   price Float?
+//   isPublished Boolean @default(false)
+
+//   categoryId String?
+//   category Category? @relation(fields: [categoryId], references: [id])
+//   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   chapters Chapter[]
+//   purchases Purchases[]
+//   attachments Attachment[]
+//   enrollments Enrollment[]
+  
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@index([categoryId])
+//   @@index([userId])
+// }
+
+
+// model Category { 
+//   id String @id @default(cuid())
+//   name String @unique
+
+//   course Course[]
+//   categoryId String?
+// }
+
+
+// model Attachment {
+//  id String @id @default(cuid())
+//  name String
+//  fileName String?
+//  url String?
+
+//  courseId String
+//  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+//  createdAt DateTime @default(now())
+//  updatedAt DateTime @updatedAt
+
+//  @@index([courseId])
+// }
+
+
+// model Chapter {
+//   id String @id @default(cuid())
+//   title String
+//   description String?
+//   videoUrl String?
+//   position Int
+//   isPublished Boolean @default(false)
+//   isFree Boolean @default(false)
+
+//   muxData MuxData?
+
+//   courseId String
+//   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+//   userProgress UserProgress[]
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@index([courseId])
+// }
+
+
+// model MuxData {
+//   id String @id @default(cuid())
+//   chapterId String @unique
+//   assetId String
+//   playbackId String?
+
+//   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+// }
+
+
+// model UserProgress {
+//   id String @id @default(cuid())
+//   userId String
+//   chapterId String
+//   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+//   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   isCompleted Boolean @default(false)
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@index([chapterId])
+//   @@unique([userId, chapterId])
+// }
+
+
+// model Purchases {
+//   id String @id @default(cuid())
+//   userId String
+//   courseId String
+//   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+//   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@index([courseId])
+//   @@index([userId])
+//   @@unique([userId, courseId])
+// }
+
+// enum EnrollmentStatus {
+//   ACTIVE        
+//   COMPLETED     
+//   EXPIRED       
+//   CANCELLED     
+//   REFUNDED      
+// }
+
+
+// model Enrollment {
+//   id          String   @id @default(cuid())
+//   userId      String
+//   courseId    String
+  
+//   status      EnrollmentStatus @default(ACTIVE)
+//   enrolledAt  DateTime         @default(now())
+//   expiresAt   DateTime?
+//   validUntil  DateTime?
+  
+//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+//   lastAccessedAt DateTime? @updatedAt
+//   progressPercentage Int   @default(0)
+//   completedAt   DateTime?
+  
+//   createdAt    DateTime @default(now())
+//   updatedAt    DateTime @updatedAt
+
+//   @@unique([userId, courseId])
+//   @@index([userId])
+//   @@index([courseId])
+//   @@index([status])
+//   @@map("enrollments")
+// }
+
+
+
+// model StripeCustomer {
+//   id String @id @default(cuid())
+//   userId String @unique
+//   stripeCustomerId String @unique
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }

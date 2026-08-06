@@ -1,0 +1,16 @@
+import Sidebar from "@/components/Sidebar";
+
+const StudentLayout = ({children}: {children: React.ReactNode}) => {
+    return (
+        <div className="h-full">
+            <div className="inset-y-0 md:flex flex-col hidden z-50 h-full fixed">
+                <Sidebar />
+            </div>
+            <div className="md:ml-[20vw] lg:ml-[15vw] mt-24">
+                {children}
+            </div>
+            
+        </div>
+    )
+}
+export default StudentLayout;

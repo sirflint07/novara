@@ -13,12 +13,27 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-
 enum UserRole {
   STUDENT
   INSTRUCTOR
   ADMIN
 }
+
+enum BlogStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+}
+
 
 model User {
   id          String   @id @default(cuid())
@@ -28,7 +43,6 @@ model User {
   avatarUrl   String?
   role        UserRole @default(STUDENT)
   
-  // ✅ Relations - now fully defined on both sides
   enrollments Enrollment[]
   purchases   Purchases[]
   userProgress UserProgress[]
@@ -59,7 +73,7 @@ model BlogPost {
   publishedAt DateTime?
   
   authorId    String
-  author      User       @relation(fields: [authorId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id])
   
   categories  BlogCategory[] @relation("PostCategories")
   tags        BlogTag[]     @relation("PostTags")
@@ -139,13 +153,6 @@ model BlogLike {
   @@map("blog_likes")
 }
 
-enum BlogStatus {
-  DRAFT
-  REVIEW
-  PUBLISHED
-  ARCHIVED
-}
-
 
 model Course {
   id String @id @default(cuid())
@@ -158,7 +165,7 @@ model Course {
 
   categoryId String?
   category Category? @relation(fields: [categoryId], references: [id])
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   chapters Chapter[]
   purchases Purchases[]
@@ -170,33 +177,32 @@ model Course {
 
   @@index([categoryId])
   @@index([userId])
+  @@map("courses")
 }
-
 
 model Category { 
   id String @id @default(cuid())
   name String @unique
-
   course Course[]
-  categoryId String?
-}
 
+  @@map("categories")
+}
 
 model Attachment {
- id String @id @default(cuid())
- name String
- fileName String?
- url String?
+  id String @id @default(cuid())
+  name String
+  fileName String?
+  url String?
 
- courseId String
- course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
- @@index([courseId])
+  @@index([courseId])
+  @@map("attachments")
 }
-
 
 model Chapter {
   id String @id @default(cuid())
@@ -218,8 +224,8 @@ model Chapter {
   updatedAt DateTime @updatedAt
 
   @@index([courseId])
+  @@map("chapters")
 }
-
 
 model MuxData {
   id String @id @default(cuid())
@@ -228,16 +234,16 @@ model MuxData {
   playbackId String?
 
   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+  @@map("mux_data")
 }
-
 
 model UserProgress {
   id String @id @default(cuid())
   userId String
   chapterId String
   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   isCompleted Boolean @default(false)
   createdAt DateTime @default(now())
@@ -245,30 +251,7 @@ model UserProgress {
 
   @@index([chapterId])
   @@unique([userId, chapterId])
-}
-
-
-model Purchases {
-  id String @id @default(cuid())
-  userId String
-  courseId String
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([courseId])
-  @@index([userId])
-}
-
-enum EnrollmentStatus {
-  ACTIVE        
-  COMPLETED     
-  EXPIRED       
-  CANCELLED     
-  REFUNDED      
+  @@map("user_progress")
 }
 
 
@@ -299,7 +282,21 @@ model Enrollment {
   @@map("enrollments")
 }
 
+model Purchases {
+  id String @id @default(cuid())
+  userId String
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([userId])
+  @@unique([userId, courseId])
+  @@map("purchases")
+}
 
 model StripeCustomer {
   id String @id @default(cuid())
@@ -308,4 +305,6 @@ model StripeCustomer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@map("stripe_customers")
 }
