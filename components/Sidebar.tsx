@@ -42,7 +42,7 @@ const Sidebar = () => {
         },
         {
             name: 'Settings',
-            href: '/dashboard/settings',
+            href: '/settings',
             icon: Settings
         }
     ]

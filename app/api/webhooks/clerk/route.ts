@@ -1,6 +1,6 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
-import { WebhookEvent } from '@clerk/nextjs/server';
+import { clerkClient, WebhookEvent } from '@clerk/nextjs/server';
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { isAdminEmail } from '@/lib/admin-config';
@@ -32,14 +32,12 @@ export async function GET() {
   );
 }
 
-
-
 export async function POST(req: Request) {
-
   const headerPayload = await headers();
   const svixId = headerPayload.get('svix-id');
   const svixTimestamp = headerPayload.get('svix-timestamp');
   const svixSignature = headerPayload.get('svix-signature');
+  const client = await clerkClient();
 
   if (!svixId || !svixTimestamp || !svixSignature) {
     return new Response('Error: Missing svix headers', { status: 400 });
@@ -49,7 +47,6 @@ export async function POST(req: Request) {
   const body = JSON.stringify(payload);
 
   const wh = new Webhook(getWebhookSecret() || '');
-  console.log('Webhook secret value:', process.env.CLERK_WEBHOOK_SECRET)
 
   let evt: WebhookEvent;
 
@@ -68,27 +65,37 @@ export async function POST(req: Request) {
 
   if (eventType === 'user.created') {
     const { id, email_addresses, first_name, last_name, image_url } = evt.data;
-     const primaryEmail = email_addresses?.find(
-    (email) => email.id === evt.data.primary_email_address_id
-  );
-  const email = primaryEmail?.email_address || email_addresses?.[0]?.email_address;
+    const primaryEmail = email_addresses?.find(
+      (email) => email.id === evt.data.primary_email_address_id
+    );
+    const email = primaryEmail?.email_address || email_addresses?.[0]?.email_address;
 
-  const role = isAdminEmail(email) ? 'ADMIN' : 'STUDENT';
+    const isAdmin = isAdminEmail(email);
+    const role = isAdmin ? 'ADMIN': null;
+    const onboardingCompleted = isAdmin ? true : false;
+
     try {
       await db.user.create({
         data: {
           clerkId: id,
-          email: email_addresses[0]?.email_address || '',
+          email: email || '',
           name: `${first_name || ''} ${last_name || ''}`.trim() || 'User',
           avatarUrl: image_url || '',
           role: role,
+          onboardingCompleted: onboardingCompleted,
         },
       });
 
-      console.log(`User created in database: ${id}`);
+      await client.users.updateUser(id, {
+        publicMetadata: {
+          role: role,
+          onboardingCompleted: onboardingCompleted,
+        },
+      });
+
+      console.log(`User created in database: ${id}`, { role, onboardingCompleted });
     } catch (error) {
       console.error('Error creating user:', error);
-      console.error('Database connection failed:', error);
       return new Response('Error: Failed to create user', { status: 500 });
     }
   }
@@ -114,34 +121,33 @@ export async function POST(req: Request) {
   }
 
   if (eventType === 'user.deleted') {
-  const { id } = evt.data;
-  console.log(`👤 Deleting user: ${id}`);
+    const { id } = evt.data;
 
-  if (id) {
-    try {
-      const existingUser = await db.user.findUnique({
-        where: { clerkId: id },
-      });
-
-      if (existingUser) {
-        await db.user.delete({
+    if (id) {
+      try {
+        const existingUser = await db.user.findUnique({
           where: { clerkId: id },
         });
-        console.log(`User deleted from database: ${id}`);
-      } else {
-        console.log(`User not found in database, skipping deletion: ${id}`);
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-        return new Response('Error: Failed to delete user', { status: 500 });
-    }
-  }
 
-  return NextResponse.json(
-    { message: 'User deletion processed' },
-    { status: 200 }
-  );
-}
+        if (existingUser) {
+          await db.user.delete({
+            where: { clerkId: id },
+          });
+          console.log(`User deleted from database: ${id}`);
+        } else {
+          console.log(`User not found in database, skipping deletion: ${id}`);
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        return new Response('Error: Failed to delete user', { status: 500 });
+      }
+    }
+
+    return NextResponse.json(
+      { message: 'User deletion processed' },
+      { status: 200 }
+    );
+  }
 
   return new Response('Webhook received', { status: 200 });
 }

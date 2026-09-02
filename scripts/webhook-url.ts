@@ -6,7 +6,7 @@ console.log('📋 Webhook Configuration');
 console.log('=======================');
 console.log(`Environment: ${config.environment}`);
 console.log(`URL: ${config.url}`);
-console.log(`Secret: ${config.secret ? '✅ Set' : '❌ Missing'}`);
+console.log(`Secret: ${config.secret ? 'Set' : 'Missing'}`);
 console.log('=======================');
 console.log('Add this URL to Clerk Dashboard:');
 console.log(config.url);

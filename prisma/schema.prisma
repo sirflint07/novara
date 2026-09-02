@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -34,59 +34,62 @@ enum EnrollmentStatus {
   REFUNDED
 }
 
-
 model User {
-  id          String   @id @default(cuid())
-  clerkId     String   @unique
-  email       String   @unique
-  name        String?
-  avatarUrl   String?
-  role        UserRole @default(STUDENT)
-  
-  enrollments Enrollment[]
-  purchases   Purchases[]
+  id                  String    @id @default(cuid())
+  clerkId             String    @unique
+  email               String    @unique
+  name                String?
+  username            String?   @unique
+  avatarUrl           String?
+  role                UserRole?
+  onboardingCompleted Boolean   @default(false)
+
+  notificationSettings NotificationSettings?
+  privacySettings      PrivacySettings?
+
+  enrollments  Enrollment[]
+  purchases    Purchases[]
   userProgress UserProgress[]
-  blogPosts   BlogPost[]
+  blogPosts    BlogPost[]
   blogComments BlogComment[]
-  blogLikes   BlogLike[]
-  courses     Course[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  blogLikes    BlogLike[]
+  courses      Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("users")
 }
 
-
 model BlogPost {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  excerpt     String?
-  content     String    @db.Text
-  coverImage  String?
+  id            String  @id @default(cuid())
+  title         String
+  slug          String  @unique
+  excerpt       String?
+  content       String  @db.Text
+  coverImage    String?
   featuredImage String?
-  
+
   status      BlogStatus @default(DRAFT)
   isFeatured  Boolean    @default(false)
   isPublished Boolean    @default(false)
   publishedAt DateTime?
-  
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  
-  categories  BlogCategory[] @relation("PostCategories")
-  tags        BlogTag[]     @relation("PostTags")
-  comments    BlogComment[]
-  likes       BlogLike[]
-  
-  metaTitle   String?
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  categories BlogCategory[] @relation("PostCategories")
+  tags       BlogTag[]      @relation("PostTags")
+  comments   BlogComment[]
+  likes      BlogLike[]
+
+  metaTitle       String?
   metaDescription String?
-  metaKeywords String?
-  
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
+  metaKeywords    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([authorId])
   @@index([status])
   @@index([publishedAt])
@@ -96,43 +99,43 @@ model BlogPost {
 }
 
 model BlogCategory {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  slug        String    @unique
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
   description String?
   posts       BlogPost[] @relation("PostCategories")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
   @@map("blog_categories")
 }
 
 model BlogTag {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  slug        String    @unique
-  posts       BlogPost[] @relation("PostTags")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  posts     BlogPost[] @relation("PostTags")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
   @@map("blog_tags")
 }
 
 model BlogComment {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  postId      String
-  post        BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  parentId    String?
-  parent      BlogComment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies     BlogComment[] @relation("CommentReplies")
-  
-  isApproved  Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  id       String        @id @default(cuid())
+  content  String        @db.Text
+  postId   String
+  post     BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User          @relation(fields: [authorId], references: [id])
+  parentId String?
+  parent   BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  BlogComment[] @relation("CommentReplies")
+
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@index([postId])
   @@index([authorId])
   @@index([createdAt])
@@ -140,38 +143,37 @@ model BlogComment {
 }
 
 model BlogLike {
-  id          String    @id @default(cuid())
-  postId      String
-  post        BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  
-  createdAt   DateTime  @default(now())
-  
+  id     String   @id @default(cuid())
+  postId String
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
   @@unique([postId, userId])
   @@index([postId])
   @@map("blog_likes")
 }
 
-
 model Course {
-  id String @id @default(cuid())
-  userId String
-  title String @db.Text
-  description String @db.Text
-  imageUrl String? @db.Text
-  price Float?
+  id          String  @id @default(cuid())
+  userId      String
+  title       String  @db.Text
+  description String  @db.Text
+  imageUrl    String? @db.Text
+  price       Float?
   isPublished Boolean @default(false)
 
   categoryId String?
-  category Category? @relation(fields: [categoryId], references: [id])
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category? @relation(fields: [categoryId], references: [id])
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  chapters Chapter[]
-  purchases Purchases[]
+  chapters    Chapter[]
+  purchases   Purchases[]
   attachments Attachment[]
   enrollments Enrollment[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -180,22 +182,22 @@ model Course {
   @@map("courses")
 }
 
-model Category { 
-  id String @id @default(cuid())
-  name String @unique
+model Category {
+  id     String   @id @default(cuid())
+  name   String   @unique
   course Course[]
 
   @@map("categories")
 }
 
 model Attachment {
-  id String @id @default(cuid())
-  name String
+  id       String  @id @default(cuid())
+  name     String
   fileName String?
-  url String?
+  url      String?
 
   courseId String
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,18 +207,18 @@ model Attachment {
 }
 
 model Chapter {
-  id String @id @default(cuid())
-  title String
+  id          String  @id @default(cuid())
+  title       String
   description String?
-  videoUrl String?
-  position Int
+  videoUrl    String?
+  position    Int
   isPublished Boolean @default(false)
-  isFree Boolean @default(false)
+  isFree      Boolean @default(false)
 
   muxData MuxData?
 
   courseId String
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   userProgress UserProgress[]
 
@@ -228,52 +230,51 @@ model Chapter {
 }
 
 model MuxData {
-  id String @id @default(cuid())
-  chapterId String @unique
-  assetId String
+  id         String  @id @default(cuid())
+  chapterId  String  @unique
+  assetId    String
   playbackId String?
 
   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  
+
   @@map("mux_data")
 }
 
 model UserProgress {
-  id String @id @default(cuid())
-  userId String
+  id        String  @id @default(cuid())
+  userId    String
   chapterId String
-  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  isCompleted Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([chapterId])
   @@unique([userId, chapterId])
+  @@index([chapterId])
   @@map("user_progress")
 }
 
-
 model Enrollment {
-  id          String   @id @default(cuid())
-  userId      String
-  courseId    String
-  
-  status      EnrollmentStatus @default(ACTIVE)
-  enrolledAt  DateTime         @default(now())
-  expiresAt   DateTime?
-  validUntil  DateTime?
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  lastAccessedAt DateTime? @updatedAt
-  progressPercentage Int   @default(0)
-  completedAt   DateTime?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id       String @id @default(cuid())
+  userId   String
+  courseId String
+
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now())
+  expiresAt  DateTime?
+  validUntil DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lastAccessedAt     DateTime? @updatedAt
+  progressPercentage Int       @default(0)
+  completedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -283,28 +284,71 @@ model Enrollment {
 }
 
 model Purchases {
-  id String @id @default(cuid())
-  userId String
+  id       String @id @default(cuid())
+  userId   String
   courseId String
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, courseId])
   @@index([courseId])
   @@index([userId])
-  @@unique([userId, courseId])
   @@map("purchases")
 }
 
 model StripeCustomer {
-  id String @id @default(cuid())
-  userId String @unique
+  id               String @id @default(cuid())
+  userId           String @unique
   stripeCustomerId String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("stripe_customers")
+}
+
+model NotificationSettings {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  courseUpdates Boolean  @default(true)
+  messages      Boolean  @default(true)
+  comments      Boolean  @default(true)
+  enrollments   Boolean  @default(true)
+  marketing     Boolean  @default(false)
+  systemUpdates Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+model PrivacySettings {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  profileVisibility   String   @default("public")
+  showEnrolledCourses Boolean  @default(true)
+  showActivityStatus  Boolean  @default(true)
+  allowDataExport     Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
+}
+
+model AdminSettings {
+  id                    String   @id @default(cuid())
+  maintenanceMode       Boolean  @default(false)
+  allowCourseCreation   Boolean  @default(true)
+  allowInstructorSignup Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("admin_settings")
 }

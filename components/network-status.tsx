@@ -1,4 +1,3 @@
-// components/network-status.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -12,13 +11,14 @@ export const NetworkStatus = () => {
   const toastIdRef = useRef<string | number | undefined>(undefined);
 
   useEffect(() => {
-    // Check initial status
+    
     if (!navigator.onLine) {
       const id = toast.error("Internet disconnected, please try reconnecting", {
-        icon: <WifiOff className="h-4 w-4" />,
+        icon: <WifiOff className="h-4 w-4"/>,
         duration: Infinity,
         position: "bottom-right",
         className: "bg-red-50 border-red-200 text-red-800",
+        closeButton: true
       });
       toastIdRef.current = id;
     }
@@ -46,6 +46,11 @@ export const NetworkStatus = () => {
         duration: Infinity,
         position: "bottom-right",
         className: "bg-red-50 border-red-200 text-red-800",
+        dismissible: true,
+        onDismiss(toast) {
+          toastIdRef.current = undefined;
+        },
+        closeButton: true
       });
       toastIdRef.current = id;
     };
@@ -60,7 +65,7 @@ export const NetworkStatus = () => {
         toast.dismiss(toastIdRef.current);
       }
     };
-  }, []); // ✅ Empty dependency array
+  }, []);
 
  return (
     <div className="fixed bottom-4 right-4 z-50">
