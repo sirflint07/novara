@@ -25,11 +25,17 @@ const isRoleApiRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher([
   "/admin(.*)",
   "/api/admin(.*)",
+  "/api/teacher(.*)",
+  "/teacher(.*)",
+  "/blogs(.*)"
+  
 ]);
 
 const isInstructorRoute = createRouteMatcher([
   "/teacher(.*)",
   "/api/teacher(.*)",
+  "/blogs(.*)",
+  "/api/blog(.*)"
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

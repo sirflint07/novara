@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === 'user.created') {
-    const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+    const { id, email_addresses, first_name, last_name, image_url, username } = evt.data;
     const primaryEmail = email_addresses?.find(
       (email) => email.id === evt.data.primary_email_address_id
     );
@@ -83,6 +83,7 @@ export async function POST(req: Request) {
           avatarUrl: image_url || '',
           role: role,
           onboardingCompleted: onboardingCompleted,
+          username: username || null
         },
       });
 

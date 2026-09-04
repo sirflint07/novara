@@ -42,7 +42,7 @@ export default function DashboardHome() {
   const { isLoaded, isSignedIn, user} = useUser()
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30 mt-20">
       <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 lg:px-8">
        
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">

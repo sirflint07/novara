@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { NetworkStatus } from "@/components/network-status";
 import { ConfettiProvider } from "@/components/providers/confetti-provider";
+import { ThemeProvider } from "@/providers/themes/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,11 +36,17 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <Toaster/>
           <ConfettiProvider />
           <NetworkStatus />
-         
           {children}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

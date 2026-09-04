@@ -201,7 +201,7 @@ export default function TeachersCourses() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30 mt-20 md:mt-24">
       <div className="max-w-6xl mx-auto px-4 py-4 md:py-8 md:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>

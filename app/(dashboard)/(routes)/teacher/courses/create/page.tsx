@@ -49,6 +49,10 @@ const CreatePage = () => {
         },
       });
 
+      console.log("Full response:", response);
+      console.log("Response data:", response.data);
+      console.log("Course ID:", response.data.id);
+
       toast.success("Course created successfully", {
         position: "top-center",
         duration: 4000,

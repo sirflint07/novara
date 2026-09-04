@@ -9,9 +9,29 @@ export async function PUT(
 ) {
   try {
     const { postId } = await params;
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
+    
 
-    if (!userId) {
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
+
+    if (!user.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -19,8 +39,8 @@ export async function PUT(
     }
 
     // ✅ Get user and the post
-    const user = await db.user.findUnique({
-      where: { clerkId: userId },
+    const dbuser = await db.user.findUnique({
+      where: { clerkId: user.id },
       select: { role: true },
     });
 
@@ -37,8 +57,8 @@ export async function PUT(
     }
 
     // ✅ Check permissions
-    const isAdmin = user?.role === 'ADMIN';
-    const isAuthor = post.authorId === userId;
+    const isAdmin = dbuser?.role === 'ADMIN';
+    const isAuthor = post.authorId === user.id;
 
     if (!isAdmin && !isAuthor) {
       return NextResponse.json(
@@ -71,17 +91,37 @@ export async function DELETE(
 ) {
   try {
     const { postId } = await params;
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
+    
 
-    if (!userId) {
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
+
+    if (!user.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const user = await db.user.findUnique({
-      where: { clerkId: userId },
+    const dbuser = await db.user.findUnique({
+      where: { clerkId: user.id },
       select: { role: true },
     });
 
@@ -97,8 +137,8 @@ export async function DELETE(
       );
     }
 
-    const isAdmin = user?.role === 'ADMIN';
-    const isAuthor = post.authorId === userId;
+    const isAdmin = dbuser?.role === 'ADMIN';
+    const isAuthor = post.authorId === user.id;
 
     if (!isAdmin && !isAuthor) {
       return NextResponse.json(

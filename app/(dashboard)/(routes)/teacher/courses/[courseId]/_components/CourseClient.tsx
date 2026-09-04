@@ -99,7 +99,7 @@ export const CourseClient = ({
 
   return (
     <>
-      <div className="max-w-4xl lg:max-w-6xl mx-auto pb-12 pt-8 lg:-pl-16 pl-0">
+      <div className="max-w-4xl lg:max-w-6xl mx-auto pb-12 pt-8 lg:-pl-16 pl-0 mt-16">
         {isComplete && course.isPublished ? (
           <div>
             <Banner

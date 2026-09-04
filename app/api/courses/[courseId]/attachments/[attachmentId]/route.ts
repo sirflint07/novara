@@ -8,9 +8,29 @@ export async function DELETE(
 ) {
   try {
     const { courseId, attachmentId } = await params;
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
+    
 
-    if (!userId) {
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
+
+    if (!user.id) {
       return NextResponse.json(
         { error: "Unauthorized - No userId found" },
         { status: 401 }
@@ -34,7 +54,7 @@ export async function DELETE(
     const courseOwner = await db.course.findUnique({
       where: {
         id: courseId,
-        userId: userId,
+        userId: user.id,
       },
     });
 

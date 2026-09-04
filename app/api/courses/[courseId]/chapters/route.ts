@@ -8,20 +8,30 @@ export async function POST(
 {
     try {
         const {courseId} = await params
-        const {userId} = await auth()
+        const {userId: clerkId} = await auth()
 
         if (!courseId) {
             return new NextResponse("Course ID is required- Course not found", {status: 400})
         }
 
-        if (!userId) {
+        if (!clerkId) {
             return new NextResponse("Unauthorized- No userId found", {status: 401})
         }
+
+        const user = await db.user.findUnique({
+            where: { clerkId },
+            select: { id: true}
+        })
+
+        if (!user) {
+      return NextResponse.json({ error: "User not found in database"}, { status: 401})
+    }
+
         const {title} = await req.json()
         const courseOwner = await db.course.findUnique({
             where: {
                 id: courseId,
-                userId: userId
+                userId: user.id
             }
         })
 

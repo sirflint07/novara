@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, BookmarkCheckIcon, BookOpen, CheckCircle, Eye, LayoutDashboard, ListChecks, Video } from "lucide-react"
+import { ArrowLeft, BookmarkCheckIcon, BookOpen, CheckCircle, LayoutDashboard, ListChecks, Video } from "lucide-react"
 import Link from "next/link"
 import ChapterTitleForm from "../_components/chapter-title-form"
 import { cn } from "@/lib/utils"
@@ -15,9 +15,18 @@ import ChapterActions from "../_components/chapter-actions"
 
 const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; courseId: string }> }) => {
   const { chapterId, courseId } = await params
-  const { userId } = await auth()
+  const { userId: clerkId } = await auth()
 
-  if (!userId) {
+  if (!clerkId) {
+    return redirect('/')
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkId },
+    select: { id: true },
+  })
+
+  if (!user) {
     return redirect('/')
   }
 
@@ -26,7 +35,7 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
       id: chapterId,
       courseId: courseId,
       course: {
-        userId: userId
+        userId: user.id
       }
     },
     include: {
@@ -38,59 +47,59 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
   console.log("MuxData:", chapter?.muxData)
 
   if (!chapter) {
-  return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-      <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
-        <BookOpen className="h-10 w-10 text-red-500" />
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+        <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
+          <BookOpen className="h-10 w-10 text-red-500" />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          Chapter Not Found
+        </h1>
+        <p className="text-gray-500 max-w-md mb-8">
+          The chapter you're looking for doesn't exist or you don't have permission to view it.
+        </p>
+        <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
+          <Link href={`/teacher/courses/${courseId}`}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Course
+          </Link>
+        </Button>
       </div>
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-        Chapter Not Found
-      </h1>
-      <p className="text-gray-500 max-w-md mb-8">
-        The chapter you're looking for doesn't exist or you don't have permission to view it.
-      </p>
-      <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
-        <Link href={`/teacher/courses/${courseId}`}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Course
-        </Link>
-      </Button>
-    </div>
-  )
-}
+    )
+  }
 
+  
   const requiredFields = [
     chapter.title,
     chapter.description,
     chapter.videoUrl,
-    chapter.isFree === chapter.isFree
+    chapter.isFree !== undefined && chapter.isFree !== null
   ]
 
   const completedFields = requiredFields.filter(Boolean).length
-  const completedFieldsText = `${completedFields} of ${requiredFields.length} fields completed`
+  const totalRequiredFields = requiredFields.length
+  const completedFieldsText = `${completedFields} of ${totalRequiredFields} fields completed`
   const isComplete = requiredFields.every(Boolean)
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 mt-16">
       <div className="mb-4">
-          {chapter.isPublished ? (
-      <Banner 
-        variant="success" 
-        label="Chapter is in Live Mode"
-        description="This chapter is now available to all students unless you unpublish or delete it"
-        className="mb-6"
-      />
-    ):
-    (
-      <Banner 
-        variant="warning" 
-        label="Chapter is in Draft Mode"
-        description="This chapter is not visible to students until you publish it."
-        className="mb-6"
-      />
-    )
-    }
-        </div>
+        {chapter.isPublished ? (
+          <Banner 
+            variant="success" 
+            label="Chapter is in Live Mode"
+            description="This chapter is now available to all students unless you unpublish or delete it"
+            className="mb-6"
+          />
+        ) : (
+          <Banner 
+            variant="warning" 
+            label="Chapter is in Draft Mode"
+            description="This chapter is not visible to students until you publish it."
+            className="mb-6"
+          />
+        )}
+      </div>
       
       <Button
         asChild
@@ -103,85 +112,89 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
           Back to Course
         </Link>
       </Button>
-      <div className="flex items-baseline justify-between">
-          <div className="mb-8">
+
+      <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
+        <div className="mb-4 md:mb-8">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
               Chapter Setup
             </h1>
             <span className={cn(
               "text-xs px-3 py-1 rounded-full font-medium",
-              chapter.isPublished || completedFields === 4
+              isComplete && chapter.isPublished
                 ? "bg-emerald-100 text-emerald-700" 
+                : isComplete && !chapter.isPublished
+                ? "bg-amber-100 text-amber-700"
                 : "bg-gray-500 text-slate-100"
             )}>
-              {chapter.isPublished || completedFields === 4 ? "Completed" : "Draft"}
+              {isComplete && chapter.isPublished ? "Published" : isComplete && !chapter.isPublished ? "Ready to Publish" : "Draft"}
             </span>
             <span className="text-sm text-gray-500 font-medium">
               {completedFieldsText}
             </span>
-            <span className={completedFields === 4 ? "rounded-full p-1 bg-emerald-600" : ""}>{completedFields === 4 && <CheckCircle color="white" className="size-3" />}</span>
+            {isComplete && (
+              <span className="rounded-full p-1 bg-emerald-600">
+                <CheckCircle color="white" className="size-3" />
+              </span>
+            )}
           </div>
           <p className="text-gray-500 text-sm mt-2">
             Chapter {chapter.position} • Configure your chapter details
           </p>
         </div>
 
-        <div>
+        <div className="mb-4 md:mb-8">
           <ChapterActions
-          disabled={!isComplete}
-          courseId={courseId}
-          chapterId={chapterId}
-          isPublished={chapter.isPublished}
+            disabled={!isComplete}
+            courseId={courseId}
+            chapterId={chapterId}
+            isPublished={chapter.isPublished}
           />
         </div>
       </div>
-      
-
-      
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-2 space-y-8">
           <div>
             <div className="flex items-center space-x-5 mb-4">
               <IconBadge icon={BookmarkCheckIcon} iconSize={"md"} variant="default" bgSize="md" />
-              <p>Chapter Video</p>
+              <p className="font-medium">Chapter Title</p>
             </div>
             <ChapterTitleForm
-            initialData={{ title: chapter.title }}
-            chapterId={chapterId}
-            courseId={courseId}
-          />
+              initialData={{ title: chapter.title }}
+              chapterId={chapterId}
+              courseId={courseId}
+            />
           </div>
           <div>
             <ChapterDescriptionForm
-            initialData={chapter}
-            chapterId={chapterId}
-            courseId={courseId}
-          />
+              initialData={chapter}
+              chapterId={chapterId}
+              courseId={courseId}
+            />
           </div>
           <div>
             <ChapterAccessForm
-            initialData={chapter}
-            chapterId={chapterId}
-            courseId={courseId}
-          />
+              initialData={chapter}
+              chapterId={chapterId}
+              courseId={courseId}
+            />
           </div>
-          
         </div>
 
         <div className="lg:col-span-2 space-y-4">
           <div>
             <div className="flex items-center space-x-5 mb-4">
               <IconBadge icon={Video} iconSize={"md"} variant="default" bgSize="md" />
-              <p>Chapter Video</p>
+              <p className="font-medium">Chapter Video</p>
             </div>
             <ChapterVideoForm 
-            initialData= { chapter }
-            courseId={courseId}
-            chapterId={chapterId}
+              initialData={chapter}
+              courseId={courseId}
+              chapterId={chapterId}
             />
           </div>
+          
           <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <IconBadge icon={LayoutDashboard} variant="default" bgSize="md" />
@@ -202,7 +215,7 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
                 <span className="font-medium text-gray-700">Chapter {chapter.position}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Chapters</span>
+                <span className="text-gray-500">Completion</span>
                 <span className="font-medium text-gray-700">{completedFieldsText}</span>
               </div>
             </div>
@@ -217,17 +230,17 @@ const ChapterIdPage = async ({ params }: { params: Promise<{ chapterId: string; 
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Completed</span>
                 <span className="font-medium text-indigo-600">
-                  {completedFields}/{requiredFields.length}
+                  {completedFields}/{totalRequiredFields}
                 </span>
               </div>
               <div className="h-2 bg-indigo-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-indigo-600 rounded-full transition-all duration-500"
-                  style={{ width: `${(completedFields / requiredFields.length) * 100}%` }}
+                  style={{ width: `${(completedFields / totalRequiredFields) * 100}%` }}
                 />
               </div>
               <p className="text-xs text-gray-500">
-                Complete all fields to publish this chapter
+                {isComplete ? "All fields completed! Ready to publish." : "Complete all fields to publish this chapter"}
               </p>
             </div>
           </div>

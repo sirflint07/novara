@@ -4,9 +4,29 @@ import { db } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
+    
 
-    if (!userId) {
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
+
+    if (!user.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -14,13 +34,13 @@ export async function POST(req: Request) {
     }
 
     // ✅ Check if user has permission to create blogs
-    const user = await db.user.findUnique({
-      where: { clerkId: userId },
+    const dbuser = await db.user.findUnique({
+      where: { clerkId: user.id },
       select: { role: true },
     });
 
     // ✅ Only ADMIN and INSTRUCTOR can create blogs
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
+    if (!dbuser || (dbuser.role !== 'ADMIN' && dbuser.role !== 'INSTRUCTOR')) {
       return NextResponse.json(
         { error: 'You do not have permission to create blog posts' },
         { status: 403 }
@@ -33,8 +53,8 @@ export async function POST(req: Request) {
     const post = await db.blogPost.create({
       data: {
         ...data,
-        authorId: userId,
-        status: user.role === 'ADMIN' ? data.status : 'REVIEW', // Instructor posts go to review
+        authorId: user.id,
+        status: dbuser.role === 'ADMIN' ? data.status : 'REVIEW', // Instructor posts go to review
       },
     });
 

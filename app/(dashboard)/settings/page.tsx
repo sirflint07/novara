@@ -1,4 +1,3 @@
-// app/(dashboard)/settings/page.tsx
 "use client";
 
 import { useState } from 'react';
@@ -10,10 +9,6 @@ import {
   Lock, 
   CreditCard, 
   Settings as SettingsIcon,
-  Globe,
-  Mail,
-  UserCog,
-  Database,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfileSettings from './_components/profile-settings';
@@ -28,12 +23,11 @@ export default function SettingsPage() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Check if user is instructor or admin (you'll need to fetch this from your DB)
   const isInstructor = false; // Replace with actual check
   const isAdmin = false; // Replace with actual check
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 mt-16">
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-sm text-gray-500 mt-1">

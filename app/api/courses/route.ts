@@ -1,40 +1,75 @@
-import { db } from '@/lib/db'
-import { auth } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
+import { db } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export async function POST (req: Request) {
-    try {
-        const { userId } = await auth()
-        const { title, description } = await req.json()
+export async function POST(req: Request) {
+  try {
+    const { userId: clerkId } = await auth();
+    
 
-        if (!userId) {
-            return new NextResponse("Unauthorized user - UserId not found", {status: 401})
-        }
-
-        const course = await db.course.create({
-            data: {
-                title,
-                description,
-                userId
-            }
-        })
-        return NextResponse.json(course, {status: 200})
-    } catch (error) {
-        console.log(`===========================COURSES============================= \n ${error}`)
-        return new NextResponse("Internal Server Error", {status: 501})
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
+
+    const { title, description, price, categoryId } = await req.json();
+
+    const course = await db.course.create({
+      data: {
+        title,
+        description,
+        price,
+        categoryId,
+        userId: user.id,
+      },
+    });
+
+    return NextResponse.json(course, { status: 201 });
+  } catch (error) {
+    console.error("[COURSES_POST]", error);
+    return NextResponse.json(
+      { error: "Failed to create course" },
+      { status: 500 }
+    );
+  }
 }
 
 
 
 export async function GET(req: Request) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
 
-    if (!userId) {
+    if (!clerkId) {
       return NextResponse.json(
-        { error: "Unauthorized - Please sign in" },
+        { error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
       );
     }
 
@@ -48,7 +83,7 @@ export async function GET(req: Request) {
     const limit = parseInt(url.searchParams.get("limit") || "10");
 
     const where: any = {
-      userId: userId,
+      userId: user.id,
     };
 
     if (search) {
@@ -154,7 +189,7 @@ export async function GET(req: Request) {
       stats: {
         totalCourses: totalCount,
         publishedCourses: await db.course.count({
-          where: { userId, isPublished: true },
+          where: { user: { id: user.id}, isPublished: true },
         }),
         // totalStudents: await db.enrollment.count({
         //   where: {

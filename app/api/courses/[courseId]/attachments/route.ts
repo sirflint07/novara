@@ -8,19 +8,39 @@ export async function DELETE(req: Request,
     { params }: { params:  Promise<{ courseId: string}>}) {
         try {
             const { courseId } = await params
-            const { userId } = await auth()
+            const { userId: clerkId } = await auth();
+    
+
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
             if (!courseId) {
                 return NextResponse.json("Course ID is required", { status: 400 })
             }
 
-            if (!userId) {
+            if (!user.id) {
                 return NextResponse.json("Unauthorized - User not found", { status: 401})
             }
 
             const courseOwner =  await db.course.findUnique({
                 where: {
                     id: courseId,
-                    userId: userId
+                    userId: user.id
                     }
                 })
 
@@ -31,7 +51,7 @@ export async function DELETE(req: Request,
             const course = await db.course.findUnique({
                 where: {
                     id: courseId,
-                    userId: userId
+                    userId: user.id
                 },
                 include: {
                     chapters: {
@@ -56,14 +76,34 @@ export async function POST(req: Request,
     { params }: { params:  Promise<{ courseId: string}> }
 ) {
     const { courseId } = await params
-    const { userId } = await auth()
+    const { userId: clerkId } = await auth();
+        
+    
+        if (!clerkId) {
+          return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+          );
+        }
+    
+        const user = await db.user.findUnique({
+          where: { clerkId: clerkId },
+          select: { id: true },
+        });
+    
+        if (!user) {
+          return NextResponse.json(
+            { error: "User not found in database" },
+            { status: 400 }
+          );
+        }
 
    try {
     if (!courseId) {
         return NextResponse.json({ error: "Course ID is required" }, { status: 400 })
     }
 
-    if (!userId) {
+    if (!user.id) {
         return NextResponse.json({error: "Unauthorized - User not found"}, { status: 401})
     }
     
@@ -80,7 +120,7 @@ export async function POST(req: Request,
     const courseOwner =  await db.course.findUnique({
         where: {
             id: courseId,
-            userId: userId
+            userId: user.id
         }
     })
 

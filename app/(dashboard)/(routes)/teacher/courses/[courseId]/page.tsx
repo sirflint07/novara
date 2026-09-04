@@ -6,15 +6,25 @@ import { CourseClient } from "./_components/CourseClient"
 const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> }) => {
   const { courseId } = await params
 
-  const { userId } = await auth()
-  if (!userId) {
+  const { userId: clerkId } = await auth() // ← Rename to clerkId
+  if (!clerkId) {
     return redirect('/')
   }
 
+  const user = await db.user.findUnique({
+    where: { clerkId },
+    select: { id: true },
+  })
+
+  if (!user) {
+    return redirect('/teacher/courses')
+  }
+
+ 
   const course = await db.course.findUnique({
     where: {
       id: courseId,
-      userId: userId
+      userId: user.id
     },
     include: {
       chapters: {
@@ -66,7 +76,6 @@ const CoursePage = async ({ params }: { params: Promise<{ courseId: string }> })
   const canPublish = hasAllCourseFields && hasChapters && !hasPublishedChapters
 
   const isComplete = hasAllCourseFields && hasChapters && hasPublishedChapters
-
 
   return (
     <CourseClient

@@ -8,7 +8,27 @@ export async function PATCH(
 ) {
   try {
     const { courseId } = await params;
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
+    
+
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
 
     if (!courseId) {
       return NextResponse.json(
@@ -17,7 +37,7 @@ export async function PATCH(
       );
     }
 
-    if (!userId) {
+    if (!user.id) {
       return NextResponse.json(
         { error: "Unauthorized - User not found" },
         { status: 401 }
@@ -27,7 +47,7 @@ export async function PATCH(
     const course = await db.course.findUnique({
       where: {
         id: courseId,
-        userId: userId,
+        userId: user.id,
       },
     });
 
@@ -41,7 +61,7 @@ export async function PATCH(
     const unpublishedCourse = await db.course.update({
       where: {
         id: courseId,
-        userId: userId,
+        userId: user.id,
       },
       data: {
         isPublished: false,

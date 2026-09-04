@@ -9,11 +9,27 @@ export async function DELETE(
 ) {
     try {
         const { courseId } = await params;
-        const { userId } = await auth();
+        const { userId: clerkId } = await auth();
+    
 
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
 
         const mux = new Mux({
             tokenId: process.env.MUX_TOKEN_ID,
@@ -23,7 +39,7 @@ export async function DELETE(
         const course = await db.course.findUnique({
             where: {
                 id: courseId,
-                userId: userId,
+                userId: user.id,
             },
             include: {
                 chapters: {
@@ -54,7 +70,7 @@ export async function DELETE(
         await db.course.delete({
             where: {
                 id: courseId,
-                userId: userId,
+                userId: user.id,
             },
         });
 
@@ -78,11 +94,31 @@ export async function PATCH (req: Request,
 ) {
     const {courseId} = await params
     try {
-        const { userId } = await auth()
-         console.log("Route - Course ID:", courseId)
-         console.log("Route - User ID from Clerk:", userId)
+        const { userId: clerkId } = await auth();
+    
 
-        if (!userId) {
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId: clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 400 }
+      );
+    }
+         console.log("Route - Course ID:", courseId)
+         console.log("Route - User ID from Clerk:", user.id)
+
+        if (!user.id) {
             return new Response('Unauthorized', { status: 401 })
         }
         const values = await req.json()
@@ -92,7 +128,7 @@ export async function PATCH (req: Request,
        const course = await db.course.update({
         where: {
             id: courseId,
-            userId
+            userId: user.id
         }, data: {
             ...values
         }
@@ -111,16 +147,36 @@ export async function GET(
 ) {
     try {
         const { courseId } = await params;
-        const { userId } = await auth();
+        const { userId: clerkId } = await auth();
+            
+        
+            if (!clerkId) {
+              return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+              );
+            }
+        
+            const user = await db.user.findUnique({
+              where: { clerkId: clerkId },
+              select: { id: true },
+            });
+        
+            if (!user) {
+              return NextResponse.json(
+                { error: "User not found in database" },
+                { status: 400 }
+              );
+            }
 
-        if (!userId) {
+        if (!user.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const course = await db.course.findUnique({
             where: {
                 id: courseId,
-                userId: userId,
+                userId: user.id,
             },
             include: {
                 chapters: {
