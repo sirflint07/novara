@@ -1,57 +1,47 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 export async function PATCH(req: Request) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
 
-    if (!userId) {
+    if (!clerkId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const { role } = await req.json();
-
-    if (!["STUDENT", "INSTRUCTOR"].includes(role)) {
-      return NextResponse.json(
-        { error: "Invalid role" },
-        { status: 400 }
-      );
-    }
-
-    console.log("Updating role:", {
-      userId,
-      role,
-    });
-
     const user = await db.user.findUnique({
-      where: {
-        clerkId: userId,
-      },
+      where: { clerkId },
       select: {
         id: true,
         clerkId: true,
         role: true,
+        onboardingCompleted: true,
       },
     });
 
-    console.log("Existing database user:", user);
-
     if (!user) {
       return NextResponse.json(
-        {
-          error: "User not found in database",
-        },
+        { error: "User not found in database" },
         { status: 404 }
+      );
+    }
+
+    const { role } = await req.json();
+
+    if (!["STUDENT", "INSTRUCTOR", "ADMIN"].includes(role)) {
+      return NextResponse.json(
+        { error: "Invalid role. Must be STUDENT, INSTRUCTOR, or ADMIN" },
+        { status: 400 }
       );
     }
 
     const updatedUser = await db.user.update({
       where: {
-        clerkId: userId,
+        clerkId,
       },
       data: {
         role,
@@ -61,6 +51,14 @@ export async function PATCH(req: Request) {
         id: true,
         clerkId: true,
         role: true,
+        onboardingCompleted: true,
+      },
+    });
+
+     const client = await clerkClient();
+    await client.users.updateUser(clerkId, {
+      publicMetadata: {
+        role: role,
         onboardingCompleted: true,
       },
     });
@@ -77,10 +75,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to update role",
+        error: error instanceof Error ? error.message : "Failed to update role",
       },
       { status: 500 }
     );

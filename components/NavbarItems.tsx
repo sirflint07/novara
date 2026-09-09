@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { useIsMounted } from "@/hooks/is-mounted";
 import { AdminSidebar } from "@/app/(dashboard)/(routes)/(admin)/admin/_components/admin-sidebar";
+import { cn } from "@/lib/utils";
 
 const NavbarItems = () => {
   const pathname = usePathname();
@@ -40,19 +41,39 @@ const NavbarItems = () => {
             {item.name}
           </a>
         ))}
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
           {isTeacherPage || isCoursePage ? (
-            <Link href="/">
-              <Button variant="default">
-                <LogOutIcon className="size-5" />
-                <span>Exit</span>
+            <Button
+              asChild 
+                className={cn("max-md:hidden md:block px-3 py-2 rounded-sm bg-gray-800 text-gray-100 text-xs cursor-pointer flex items-center justify-center")}
+              >
+                <Link href="/">
+                Exit
+                </Link>
               </Button>
-            </Link>
           ) : (
-            <Link href="/teacher/courses">
-              <Button>Teacher Mode</Button>
-            </Link>
+            <Button
+              asChild 
+                className={cn("max-md:hidden md:block px-3 py-2 rounded-sm bg-gray-800 text-gray-100 text-xs cursor-pointer flex items-center justify-center")}
+              >
+                <Link href="/teacher/course">
+                Teacher Mode
+                </Link>
+              </Button>
           )}
+
+          {
+            !isAdminPage && (
+              <Button
+              asChild 
+                className={cn("max-md:hidden md:block px-3 py-2 rounded-sm bg-blue-800 text-gray-100 text-xs cursor-pointer flex items-center justify-center")}
+              >
+                <Link href="/admin">
+                Admin Mode
+                </Link>
+              </Button>
+            )
+          }
         </div>
       </div>
       <div>
@@ -63,7 +84,6 @@ const NavbarItems = () => {
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-[85vw] sm:w-87.5">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-
               <MobileSidebar collapsed={false} />
             </SheetContent>
           </Sheet>

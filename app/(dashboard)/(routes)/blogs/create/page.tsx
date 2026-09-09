@@ -290,7 +290,6 @@ export default function CreateBlogPage() {
         </div>
       </div>
 
-      {/* ✅ FIX: ALL FormFields are now inside the Form component */}
       <Form {...form}>
         <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

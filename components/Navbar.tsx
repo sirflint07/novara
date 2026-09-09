@@ -5,6 +5,7 @@ import NavbarItems from './NavbarItems'
 import Image from 'next/image'
 import { useIsMounted } from '@/hooks/is-mounted';
 import { usePathname } from 'next/navigation';
+import { ThemeToggle } from './theme-toggle';
 
 const Navbar = () => {
     const isMounted = useIsMounted()
@@ -15,7 +16,7 @@ const Navbar = () => {
   return (
     <>
     { isMounted && !isAdminPage && !isCoursePage && (
-        <nav className='md:pl-[10vw] lg:pl-[7vw] py-4 fixed top-0 left-0 right-0 z-50 bg-white shadow-sm flex justify-between items-center w-full px-4 mb-6'>
+        <nav className='md:pl-[10vw] lg:pl-[7vw] py-6 fixed top-0 left-0 right-0 z-50 bg-white shadow-sm flex justify-between items-center w-full px-4 mb-6'>
         <div className='md:hidden'>
            <Image 
                 src="/logo/logo.svg"
@@ -29,6 +30,9 @@ const Navbar = () => {
         <div className='flex items-center justify-between gap-2 lg:gap-4'>
         <div className='hidden md:block w-0 md:w-[25vw] lg:w-[30vw] xl:w-[40vw] 2xl:w-[46vw]'></div>
             <NavbarItems />
+            <div>
+                <ThemeToggle />
+            </div>
             <div className='size-10 flex items-center justify-center rounded-full bg-gray-100'>
                 { isMounted &&
                     <SignedIn >

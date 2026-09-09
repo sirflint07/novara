@@ -94,7 +94,7 @@ export const AdminHeader = ({
           </Button>
 
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">
+            <h1 className="text-sm md:text-base lg:text-lg font-semibold text-gray-900">
               {pageTitle}
             </h1>
             <p className="hidden text-sm text-gray-500 md:block">
@@ -119,9 +119,25 @@ export const AdminHeader = ({
                         <LogOutIcon className='size-5'/>
                         <span>Exit</span>
                     </Button>
-                </Link>}
+                </Link>
+                }
+
           </div>
         <div className="flex items-center gap-4 ml-8">
+          {
+                  (isAdmin && isAdminPage) && (
+                    <Button
+                    asChild 
+                    className={cn("md:hidden px-3 py-2 rounded-sm bg-gray-800 text-gray-100 text-xs cursor-pointer flex items-center justify-center")}
+                    >
+                      <Link href="/"
+                      className="inline-block"
+                      >
+                      Exit Admin
+                      </Link>
+                    </Button>
+                  )
+                }
           <div className="hidden md:flex relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input

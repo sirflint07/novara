@@ -111,8 +111,25 @@ export const AdminSidebar = ({ collapsed }: AdminSidebarProps) => {
   </nav>
 </ScrollArea>
 
-    <div className="shrink-0 border-t border-gray-200 p-4 space-y-2">
+            {/* {isAdmin && (<Link href="/">
+              <Button variant="default">
+                <LogOutIcon className="size-5" />
+                <span>Exit</span>
+              </Button>
+            </Link>)
+            }
 
+{
+  isAdmin && (
+    <Link href="/">
+              <Button variant="default">
+                <LogOutIcon className="size-5" />
+                <span>Exit</span>
+              </Button>
+            </Link>
+  )
+} */}
+    <div className="shrink-0 p-4 space-y-2">
       <div className="border-t border-gray-200 pt-3">
         {!collapsed ? (
           <div className="flex items-center gap-3">

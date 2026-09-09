@@ -109,7 +109,7 @@ const CreatePage = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto my-auto h-[50vh] p-8 md:p-16">
+    <div className="max-w-5xl mx-auto my-auto h-[50vh] p-8 md:p-16 mt-16">
       <div className="mb-6 ">
         <motion.h1
           variants={{ itemVariants }}

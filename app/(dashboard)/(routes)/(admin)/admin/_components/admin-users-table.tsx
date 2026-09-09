@@ -40,6 +40,7 @@ import {
 import { UserRole } from "@prisma/client";
 import { toast } from "sonner";
 import axios from "axios";
+import { useIsMounted } from "@/hooks/is-mounted";
 
 interface User {
   id: string;
@@ -109,6 +110,7 @@ export const AdminUsersTable = ({ users }: AdminUsersTableProps) => {
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+  const isMounted = useIsMounted()
 
   const openRoleDialog = (userId: string, newRole: UserRole) => {
     setSelectedUserId(userId);
@@ -209,7 +211,7 @@ export const AdminUsersTable = ({ users }: AdminUsersTableProps) => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th> */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
@@ -230,7 +232,7 @@ export const AdminUsersTable = ({ users }: AdminUsersTableProps) => {
               ) : (
                 paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
+                    {/* <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
                           {user.name?.charAt(0) || user.username?.charAt(0) || "?"}
@@ -239,7 +241,8 @@ export const AdminUsersTable = ({ users }: AdminUsersTableProps) => {
                           {user.name || user.username || "Unnamed"}
                         </span>
                       </div>
-                    </td>
+                    </td> */}
+                    
                     <td className="px-6 py-4 text-sm text-gray-500">{user.email}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {user.username ? (
@@ -296,7 +299,8 @@ export const AdminUsersTable = ({ users }: AdminUsersTableProps) => {
                           )}
                         </div>
 
-                        <DropdownMenu>
+                        { isMounted && (
+                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isDeleting === user.id}>
                               <MoreHorizontal className="h-4 w-4" />
@@ -321,6 +325,7 @@ export const AdminUsersTable = ({ users }: AdminUsersTableProps) => {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        )}
                       </div>
                     </td>
                   </tr>

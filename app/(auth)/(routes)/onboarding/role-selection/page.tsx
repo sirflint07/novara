@@ -39,52 +39,6 @@ export default function RoleSelectionPage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-// const handleRoleSelection = async () => {
-//   if (!selectedRole || isSubmitting) return;
-
-//   setIsSubmitting(true);
-
-//   try {
-//     console.log("Submitting role:", selectedRole);
-
-//     const response = await axios.patch(
-//       "/api/users/role",
-//       {
-//         role: selectedRole,
-//       },
-//       {
-//         timeout: 10000,
-//       }
-//     );
-
-//     console.log("Role API response:", response.data);
-
-//     if (!response.data.success) {
-//       throw new Error(
-//         response.data.error || "Failed to update role"
-//       );
-//     }
-
-//     toast.success("Role selected successfully!");
-
-//     if (selectedRole === "INSTRUCTOR") {
-//       window.location.href = "/teacher/courses";
-//     } else {
-//       window.location.href = "/";
-//     }
-//   } catch (error: any) {
-//     console.error("ROLE SELECTION ERROR:", error);
-
-//     const message =
-//       error?.response?.data?.error ||
-//       error?.message ||
-//       "Failed to update role";
-
-//     toast.error(message);
-
-//     setIsSubmitting(false);
-//   }
-// };
 
 const handleRoleSelection = async () => {
   if (!selectedRole || isSubmitting) return;
@@ -92,8 +46,8 @@ const handleRoleSelection = async () => {
   setIsSubmitting(true);
 
   try {
-    console.log("🚀 Starting role selection...");
-    console.log("📤 Selected role:", selectedRole);
+    console.log("Starting role selection...");
+    console.log("Selected role:", selectedRole);
 
     const response = await axios.patch(
       "/api/users/role",
@@ -106,8 +60,8 @@ const handleRoleSelection = async () => {
       }
     );
 
-    console.log("📥 Response status:", response.status);
-    console.log("📥 Response data:", response.data);
+    console.log("Response status:", response.status);
+    console.log("Response data:", response.data);
 
     if (!response.data.success) {
       throw new Error(response.data.error || "Failed to update role");
@@ -116,22 +70,21 @@ const handleRoleSelection = async () => {
     toast.success("Role selected successfully!");
 
     if (selectedRole === "INSTRUCTOR") {
-      window.location.href = "/teacher/courses";
+       router.push("/teacher/courses");
     } else {
-      window.location.href = "/";
+      router.push("/");
     }
   } catch (error: any) {
-    console.error("❌ ROLE SELECTION ERROR:", error);
+    console.error("ROLE SELECTION ERROR:", error);
     
-    // ✅ Log the full error details
     if (error.response) {
-      console.error("📥 Response status:", error.response.status);
-      console.error("📥 Response data:", error.response.data);
-      console.error("📥 Response headers:", error.response.headers);
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", error.response.data);
+      console.error("Response headers:", error.response.headers);
     } else if (error.request) {
-      console.error("📤 No response received:", error.request);
+      console.error("No response received:", error.request);
     } else {
-      console.error("💥 Error message:", error.message);
+      console.error("Error message:", error.message);
     }
 
     const message =

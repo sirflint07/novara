@@ -48,7 +48,7 @@ const Sidebar = () => {
     <>
       {isMounted && !isAdminPage && !isCoursePage && (
         <div className="flex flex-col shadow-sm overflow-y-auto bg-white h-full md:w-[20vw] lg:w-[15vw]">
-          <div className="py-4">
+          <div className="py-3.5 border border-b border-gray-300/50">
             <Link href="/" className="flex gap-1 items-center pb-1">
               <Image
                 src="/logo/logo.svg"
