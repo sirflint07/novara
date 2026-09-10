@@ -13,6 +13,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ActionType {
+  USER_SUSPENDED
+  USER_BANNED
+  USER_UNSUSPENDED
+  ROLE_CHANGED
+  PROFILE_UPDATED
+  COURSE_FEATURED
+  COURSE_UNFEATURED
+  BLOG_FEATURED
+  BLOG_UNFEATURED
+}
+
+model AdminAction {
+  id        String     @id @default(cuid())
+  adminId   String
+  action    ActionType
+  targetId  String
+  details   Json       @default("{}")
+  ipAddress String?
+  userAgent String?
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([targetId])
+  @@index([createdAt])
+  @@map("admin_actions")
+}
+
+model UserAnalytics {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  totalTimeSpent   Int      @default(0)
+  lastActiveAt     DateTime @default(now())
+  coursesStarted   Int      @default(0)
+  coursesCompleted Int      @default(0)
+  totalBlogViews   Int      @default(0)
+  totalComments    Int      @default(0)
+  totalLikes       Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_analytics")
+}
+
 enum UserRole {
   STUDENT
   INSTRUCTOR
@@ -35,14 +91,15 @@ enum EnrollmentStatus {
 }
 
 model User {
-  id                  String    @id @default(cuid())
-  clerkId             String    @unique
-  email               String    @unique
+  id                  String     @id @default(cuid())
+  clerkId             String     @unique
+  email               String     @unique
   name                String?
-  username            String?   @unique
+  username            String?    @unique
   avatarUrl           String?
   role                UserRole?
-  onboardingCompleted Boolean   @default(false)
+  onboardingCompleted Boolean    @default(false)
+  status              UserStatus @default(ACTIVE)
 
   notificationSettings NotificationSettings?
   privacySettings      PrivacySettings?
@@ -54,9 +111,11 @@ model User {
   blogComments BlogComment[]
   blogLikes    BlogLike[]
   courses      Course[]
+  adminActions AdminAction[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userAnalytics UserAnalytics?
 
   @@map("users")
 }
@@ -287,7 +346,7 @@ model Purchases {
   id       String @id @default(cuid())
   userId   String
   courseId String
-  price Float @default(0)
+  price    Float  @default(0)
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 

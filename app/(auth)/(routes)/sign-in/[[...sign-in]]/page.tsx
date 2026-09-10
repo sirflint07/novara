@@ -40,7 +40,6 @@
 // }
 
 
-// app/(auth)/(routes)/sign-in/[[...sign-in]]/page.tsx
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -48,10 +47,8 @@ import { SignIn } from "@clerk/nextjs";
 
 export default async function SignInPage() {
   const { userId } = await auth();
-  
-  // If user is already authenticated, handle redirect
+
   if (userId) {
-    // Fetch user from database
     const user = await db.user.findUnique({
       where: { clerkId: userId },
       select: { 
@@ -60,12 +57,10 @@ export default async function SignInPage() {
       },
     });
 
-    // If user doesn't exist or onboarding not completed
     if (!user || !user.onboardingCompleted) {
       redirect("/onboarding/role-selection");
     }
 
-    // Redirect based on role
     switch (user.role) {
       case "ADMIN":
         redirect("/admin");
@@ -74,18 +69,13 @@ export default async function SignInPage() {
       case "STUDENT":
         redirect("/");
       default:
-        // Fallback for any other role
         redirect("/onboarding/role-selection");
     }
   }
 
-  // If not authenticated, show sign-in page
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <SignIn 
-        // Optional: Pass redirect URL from query params
-        // The middleware will handle this
-      />
+      <SignIn />
     </div>
   );
 }

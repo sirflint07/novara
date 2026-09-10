@@ -50,8 +50,6 @@ export default clerkMiddleware(async (auth, request) => {
 
   // Handle API routes - but be more specific
   if (pathname.startsWith('/api')) {
-    // If it's a public API route, we already returned above
-    // For protected API routes, check authentication
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
