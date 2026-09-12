@@ -87,20 +87,20 @@ export async function DELETE(
 }
 
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ userId: string }> }
-) {
-  try {
-    const { userId } = await params;
-    return NextResponse.json({ 
-      message: "Route is working", 
-      userId: userId 
-    });
-  } catch (error) {
-    return NextResponse.json({ error: "Error" }, { status: 500 });
-  }
-}
+// export async function GET(
+//   req: Request,
+//   { params }: { params: Promise<{ userId: string }> }
+// ) {
+//   try {
+//     const { userId } = await params;
+//     return NextResponse.json({ 
+//       message: "Route is working", 
+//       userId: userId 
+//     });
+//   } catch (error) {
+//     return NextResponse.json({ error: "Error" }, { status: 500 });
+//   }
+// }
 
 
 // app/api/admin/users/[userId]/route.ts

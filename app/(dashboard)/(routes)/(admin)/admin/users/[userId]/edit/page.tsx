@@ -1,22 +1,26 @@
-// app/(dashboard)/admin/users/[userId]/edit/page.tsx
+// app/(dashboard)/(routes)/(admin)/admin/users/[userId]/edit/page.tsx
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import UserEditClient from "./_components/user-edit-client";
 
-
 interface UserEditPageProps {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 export default async function UserEditPage({ params }: UserEditPageProps) {
+  // ✅ Await params in Next.js 15+
+  const { userId: targetUserId } = await params;
+
   const { userId } = await auth();
-  
+
   // Check authentication
   if (!userId) {
-    redirect(`/sign-in?redirect_url=/admin/users/${params.userId}/edit`);
+    redirect(
+      `/sign-in?redirect_url=/admin/users/${targetUserId}/edit`
+    );
   }
 
   // Verify admin role
@@ -29,12 +33,16 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
     redirect("/admin");
   }
 
+  // ✅ Guard against missing userId
+  if (!targetUserId) {
+    redirect("/admin/users");
+  }
+
   // Fetch user details with all related data
   const user = await db.user.findUnique({
-    where: { id: params.userId },
+    where: { id: targetUserId },
     include: {
-      // Courses the user has created (if instructor)
-      createdCourses: {
+      courses: {
         select: {
           id: true,
           title: true,
@@ -48,34 +56,46 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
             },
           },
         },
+        orderBy: {
+          createdAt: "desc",
+        },
       },
-      // Courses the user is enrolled in (if student)
-      enrolledCourses: {
+      enrollments: {
         select: {
+          id: true,
+          status: true,
+          progressPercentage: true,
+          completedAt: true,
+          enrolledAt: true,
+          lastAccessedAt: true,
+          expiresAt: true,
           course: {
             select: {
               id: true,
               title: true,
               price: true,
               isPublished: true,
-              instructor: {
+              user: {
                 select: {
+                  id: true,
                   name: true,
+                  avatarUrl: true,
                 },
               },
             },
           },
-          createdAt: true,
-          progress: true,
-          completed: true,
+        },
+        orderBy: {
+          enrolledAt: "desc",
         },
       },
-      // Blog posts created by the user
       blogPosts: {
         select: {
           id: true,
           title: true,
-          published: true,
+          slug: true,
+          isPublished: true,
+          status: true,
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -86,46 +106,29 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       },
-      // User's subscriptions
-      subscriptions: {
+      purchases: {
         select: {
           id: true,
-          plan: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-          autoRenew: true,
-        },
-      },
-      // Payment history
-      payments: {
-        select: {
-          id: true,
-          amount: true,
-          status: true,
-          method: true,
+          price: true,
           createdAt: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
-        take: 10, // Last 10 payments
+        take: 10,
       },
-      // User's profile
-      profile: {
-        select: {
-          bio: true,
-          avatar: true,
-          location: true,
-          website: true,
-          socialLinks: true,
-          skills: true,
-          interests: true,
-        },
-      },
+      notificationSettings: true,
+      privacySettings: true,
+      userAnalytics: true,
     },
   });
 
@@ -133,26 +136,46 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
     redirect("/admin/users");
   }
 
-  // Get additional stats
-  const totalComments = await db.comment.count({
-    where: { userId: params.userId },
+  // Additional stats
+  const totalComments = await db.blogComment.count({
+    where: { authorId: targetUserId },
   });
 
-  const totalLikes = await db.like.count({
-    where: { userId: params.userId },
+  const totalLikes = await db.blogLike.count({
+    where: { userId: targetUserId },
   });
 
-  const totalCoursesCreated = user.createdCourses.length;
-  const totalCoursesEnrolled = user.enrolledCourses.length;
+  const totalCoursesCreated = user.courses.length;
+  const totalCoursesEnrolled = user.enrollments.length;
   const totalBlogPosts = user.blogPosts.length;
 
-  // Calculate total revenue from courses (if instructor)
-  const totalRevenue = user.createdCourses.reduce((sum, course) => {
+  const totalRevenue = user.courses.reduce((sum, course) => {
     return sum + (course.price || 0) * course._count.enrollments;
   }, 0);
 
+  const totalSpent = user.purchases.reduce((sum, purchase) => {
+    return sum + (purchase.price || 0);
+  }, 0);
+
+  const adminActions = await db.adminAction.findMany({
+    where: { targetId: targetUserId },
+    include: {
+      admin: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 10,
+  });
+
   return (
-    <UserEditClient 
+    <UserEditClient
       user={user}
       stats={{
         totalComments,
@@ -161,7 +184,9 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
         totalCoursesEnrolled,
         totalBlogPosts,
         totalRevenue,
+        totalSpent,
       }}
+      adminActions={adminActions}
     />
   );
 }
