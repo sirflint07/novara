@@ -1,8 +1,9 @@
-// app/(dashboard)/(routes)/(admin)/admin/users/[userId]/edit/page.tsx
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import UserEditClient from "./_components/user-edit-client";
+import { notFound } from "next/navigation";
+
 
 interface UserEditPageProps {
   params: Promise<{
@@ -11,19 +12,17 @@ interface UserEditPageProps {
 }
 
 export default async function UserEditPage({ params }: UserEditPageProps) {
-  // ✅ Await params in Next.js 15+
+
   const { userId: targetUserId } = await params;
 
   const { userId } = await auth();
 
-  // Check authentication
   if (!userId) {
     redirect(
       `/sign-in?redirect_url=/admin/users/${targetUserId}/edit`
     );
   }
 
-  // Verify admin role
   const adminUser = await db.user.findUnique({
     where: { clerkId: userId },
     select: { role: true },
@@ -33,12 +32,10 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
     redirect("/admin");
   }
 
-  // ✅ Guard against missing userId
   if (!targetUserId) {
     redirect("/admin/users");
   }
 
-  // Fetch user details with all related data
   const user = await db.user.findUnique({
     where: { id: targetUserId },
     include: {
@@ -132,32 +129,25 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
     },
   });
 
-  if (!user) {
-    redirect("/admin/users");
-  }
+  if (!user) notFound();
 
-  // Additional stats
-  const totalComments = await db.blogComment.count({
-    where: { authorId: targetUserId },
-  });
+  // if (!user) {
+  //   redirect("/admin/users");
+  // }
 
-  const totalLikes = await db.blogLike.count({
-    where: { userId: targetUserId },
-  });
+  // const totalComments = await db.blogComment.count({
+  //   where: { authorId: targetUserId },
+  // });
 
-  const totalCoursesCreated = user.courses.length;
-  const totalCoursesEnrolled = user.enrollments.length;
-  const totalBlogPosts = user.blogPosts.length;
+  // const totalLikes = await db.blogLike.count({
+  //   where: { userId: targetUserId },
+  // });
 
-  const totalRevenue = user.courses.reduce((sum, course) => {
-    return sum + (course.price || 0) * course._count.enrollments;
-  }, 0);
-
-  const totalSpent = user.purchases.reduce((sum, purchase) => {
-    return sum + (purchase.price || 0);
-  }, 0);
-
-  const adminActions = await db.adminAction.findMany({
+  const [totalComments, totalLikes, adminActions] = await Promise.all([
+  db.blogComment.count({ where: { authorId: targetUserId } }),
+  db.blogLike.count({ where: { userId: targetUserId } }),
+  db.adminAction.findMany(
+    {
     where: { targetId: targetUserId },
     include: {
       admin: {
@@ -172,7 +162,51 @@ export default async function UserEditPage({ params }: UserEditPageProps) {
       createdAt: "desc",
     },
     take: 10,
-  });
+  }
+  ),
+]);
+
+  const totalCoursesCreated = user.courses.length;
+  const totalCoursesEnrolled = user.enrollments.length;
+  const totalBlogPosts = user.blogPosts.length;
+
+  // const totalRevenue = user.courses.reduce((sum, course) => {
+  //   return sum + (course.price || 0) * course._count.enrollments;
+  // }, 0);
+
+  const revenueResult = await db.purchases.aggregate({
+  where: {
+    course: {
+      userId: targetUserId,
+    },
+  },
+  _sum: {
+    price: true,
+  },
+});
+
+const totalRevenue = revenueResult._sum.price ?? 0;
+
+  const totalSpent = user.purchases.reduce((sum, purchase) => {
+    return sum + (purchase.price || 0);
+  }, 0);
+
+  // const adminActions = await db.adminAction.findMany({
+  //   where: { targetId: targetUserId },
+  //   include: {
+  //     admin: {
+  //       select: {
+  //         id: true,
+  //         name: true,
+  //         email: true,
+  //       },
+  //     },
+  //   },
+  //   orderBy: {
+  //     createdAt: "desc",
+  //   },
+  //   take: 10,
+  // });
 
   return (
     <UserEditClient
